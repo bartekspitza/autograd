@@ -36,9 +36,6 @@ class Tensor:
 		
 		# Matrix(dim=2) x Vector
 		if self.dim == 2 and other.dim == 1:
-			if self.shape[1] != other.shape[0]:
-				raise RuntimeError(f'Shape {self.shape} does not match {other.shape} at dimension 1')
-
 			new_data = []
 			for d in self.data:
 				tmp = Tensor(d)
@@ -49,19 +46,3 @@ class Tensor:
 	
 	def __repr__(self):
 		return f'Tensor(data={self.data.__repr__()})'
-
-
-data = [
-	[3, 5],
-	[3, 5],
-	[3, 5],
-]
-
-m = Tensor([[1, 2], [3, 4]])
-n1 = Tensor([10, 20])
-n2 = Tensor([10, 20, 30])
-
-c = m.mult(n1)
-
-print(c)
-print(c.shape)
