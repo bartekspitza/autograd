@@ -63,6 +63,34 @@ class Tensor:
         res = tmp.add(other)
         new_data.append(res.data)
       return Tensor(new_data)
+  
+  def sub(self, other):
+    if not isinstance(other, Tensor):
+      raise TypeError("Not Tensor")
+    
+    # Vector - Vector
+    if self.dim == 1 and other.dim == 1:
+      if self.shape != other.shape:
+        raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
+
+      new_data = [a-b for a, b in zip(self.data, other.data)]	
+      return Tensor(new_data)
+    
+    # Matrix(dim=2) + Vector
+    if self.dim == 1 and other.dim == 2:
+      new_data = []
+      for vec in other.data:
+        res = [a-b for a, b in zip(self.data, vec)]	
+        new_data.append(res)
+      return Tensor(new_data)
+
+    if self.dim == 2 and other.dim == 1:
+      new_data = []
+      for d in self.data:
+        tmp = Tensor(d)
+        res = tmp.sub(other)
+        new_data.append(res.data)
+      return Tensor(new_data)
 
   
   def __repr__(self):
