@@ -54,6 +54,13 @@ class Testing(unittest.TestCase):
 		b = Tensor([10, 20, 30])
 		self.assertRaises(RuntimeError, lambda: a.mult(b))
 
+	def test_mult_vector_with_2dmatrix(self):
+		a = Tensor([[1, 2], [3, 4]])
+		b = Tensor([10, 20])
+		c = b.mult(a)
+		self.assertEqual([10, 40], c.data[0])
+		self.assertEqual([30, 80], c.data[1])
+
 
 if __name__ == '__main__':
 	unittest.main()
