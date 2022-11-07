@@ -1,0 +1,1 @@
+A Neural Network library written from scratch with no use of external libraries. Capable of forward **and backward** pass, capable of completing the mnist dataset task.
