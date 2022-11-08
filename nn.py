@@ -33,6 +33,13 @@ class Tensor:
         self.data = [Tensor(vec) for vec in self.data]
     
     def mult(self, other):
+        if isinstance(other, (int, float)):
+            if self.dim == 1:
+                return Tensor([a*other for a in self.data])
+            if self.dim == 2:
+                data = [[a*other for a in vec.data] for vec in self.data]
+                return Tensor(data)
+        
         if not isinstance(other, Tensor):
             raise TypeError("Not Tensor")
         
@@ -52,6 +59,13 @@ class Tensor:
             return Tensor(data)
     
     def add(self, other):
+        if isinstance(other, (int, float)):
+            if self.dim == 1:
+                return Tensor([a+other for a in self.data])
+            if self.dim == 2:
+                data = [[a+other for a in vec.data] for vec in self.data]
+                return Tensor(data)
+        
         if not isinstance(other, Tensor):
             raise TypeError("Not Tensor")
         
@@ -71,6 +85,13 @@ class Tensor:
             return Tensor(data)
     
     def sub(self, other):
+        if isinstance(other, (int, float)):
+            if self.dim == 1:
+                return Tensor([a-other for a in self.data])
+            if self.dim == 2:
+                data = [[a-other for a in vec.data] for vec in self.data]
+                return Tensor(data)
+        
         if not isinstance(other, Tensor):
             raise TypeError("Not Tensor")
         
@@ -91,6 +112,13 @@ class Tensor:
             return Tensor(data)
     
     def div(self, other):
+        if isinstance(other, (int, float)):
+            if self.dim == 1:
+                return Tensor([a/other for a in self.data])
+            if self.dim == 2:
+                data = [[a/other for a in vec.data] for vec in self.data]
+                return Tensor(data)
+
         if not isinstance(other, Tensor):
             raise TypeError("Not Tensor")
         

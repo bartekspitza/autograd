@@ -58,6 +58,11 @@ class Testing(unittest.TestCase):
         c = b*a
         self.assertEqual([10, 40], c[0].data)
         self.assertEqual([30, 80], c[1].data)
+    def test_mult_scalar(self):
+        v = nn.Tensor([6, 8])
+        m = nn.Tensor([[12, 8], [16, 32]])
+        self.assertEqual([12, 16], (v*2).data)
+        self.assertEqual([[24, 16], [32, 64]], (m*2).tolist())
     
     # Add
     def test_add_vector_with_vector(self):
@@ -88,6 +93,11 @@ class Testing(unittest.TestCase):
         c = b+a
         self.assertEqual([11, 22], c[0].data)
         self.assertEqual([13, 24], c[1].data)
+    def test_add_scalar(self):
+        v = nn.Tensor([6, 8])
+        m = nn.Tensor([[12, 8], [16, 32]])
+        self.assertEqual([8, 10], (v+2).data)
+        self.assertEqual([[14, 10], [18, 34]], (m+2).tolist())
     
     # Sub
     def test_sub_vector_with_vector(self):
@@ -119,6 +129,11 @@ class Testing(unittest.TestCase):
         c = v-m
         self.assertEqual([9, 18], c[0].data)
         self.assertEqual([7, 16], c[1].data)
+    def test_sub_scalar(self):
+        v = nn.Tensor([6, 8])
+        m = nn.Tensor([[12, 8], [16, 32]])
+        self.assertEqual([4, 6], (v-2).data)
+        self.assertEqual([[10, 6], [14, 30]], (m-2).tolist())
     
     # Div
     def test_div_vector_with_vector(self):
@@ -145,6 +160,11 @@ class Testing(unittest.TestCase):
         c = v/m
         self.assertEqual([0.5, 1.0], c[0].data)
         self.assertEqual([0.375, 0.25], c[1].data)
+    def test_div_scalar(self):
+        v = nn.Tensor([6, 8])
+        m = nn.Tensor([[12, 8], [16, 32]])
+        self.assertEqual([3, 4], (v/2).data)
+        self.assertEqual([[6, 4], [8, 16]], (m/2).tolist())
     
     # Dot
     def test_dot_vector_with_vector(self):
