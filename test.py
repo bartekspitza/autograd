@@ -122,6 +122,30 @@ class Testing(unittest.TestCase):
         self.assertEqual([9, 18], c.data[0])
         self.assertEqual([7, 16], c.data[1])
     
+    # Div
+    def test_div_vector_with_vector(self):
+        a = Tensor([12, 8])
+        b = Tensor([2, 4])
+        c = a.div(b)
+        self.assertEqual([6, 2], c.data)
+    
+    def test_div_vector_with_vector_shapes_mismatch_raises(self):
+        a = Tensor([1])
+        b = Tensor([10, 20])
+        self.assertRaises(RuntimeError, lambda: a.div(b))
+
+    def test_div_2d_with_vector(self):
+        v = Tensor([2, 4])
+        m = Tensor([[12, 8], [16, 32]])
+        c = m.div(v)
+        self.assertEqual([[6, 2], [8, 8]], c.data)
+
+    def test_div_vector_with_2d(self):
+        v = Tensor([6, 8])
+        m = Tensor([[12, 8], [16, 32]])
+        c = v.div(m)
+        self.assertEqual([[0.5, 1.0], [0.375, 0.25]], c.data)
+    
     # Dot
     def test_dot_vector_with_vector(self):
         a = Tensor([1, 2])
