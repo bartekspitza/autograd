@@ -1,12 +1,8 @@
 class Tensor:
   def __init__(self, data):
-    ## Init with shape
-    if isinstance(data, tuple):
-      if len(data) > 1:
-        raise RuntimeError("Init of shapes with dim > 1 not impl!!!!")
-      data = [0] * data[0]
+    if not isinstance(data, list):
+      raise TypeError("Expected python list")
 
-    # Init with actual data
     self.data = data
     self.shape = ()
     curr_dim = data
@@ -22,6 +18,17 @@ class Tensor:
       else:
         break
     self.dim = len(self.shape)
+
+    if self.dim == 1:
+      return
+    if self.dim > 2:
+      raise Exception("Dimensions over 2 not implemented")
+
+    # For 2d tensors, convert the nested arrays to tensors
+    # Watchout for already "good" tensors
+    if self.shape[1] > 0 and isinstance(self.data[0], Tensor):
+      return
+    self.data = [Tensor(vec) for vec in self.data]
   
   def mult(self, other):
     if not isinstance(other, Tensor):
@@ -39,12 +46,8 @@ class Tensor:
     if self.dim == 1 and other.dim == 2:
       return other.mult(self)
     if self.dim == 2 and other.dim == 1:
-      new_data = []
-      for d in self.data:
-        tmp = Tensor(d)
-        res = tmp.mult(other)
-        new_data.append(res.data)
-      return Tensor(new_data)
+      data = [v*other for v in self.data]
+      return Tensor(data)
   
   def add(self, other):
     if not isinstance(other, Tensor):
@@ -55,19 +58,15 @@ class Tensor:
       if self.shape != other.shape:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
 
-      new_data = [a+b for a, b in zip(self.data, other.data)]	
-      return Tensor(new_data)
+      data = [a+b for a, b in zip(self.data, other.data)]	
+      return Tensor(data)
     
     # Matrix(dim=2) + Vector
     if self.dim == 1 and other.dim == 2:
-      return other.add(self)
+      return other+self
     if self.dim == 2 and other.dim == 1:
-      new_data = []
-      for d in self.data:
-        tmp = Tensor(d)
-        res = tmp.add(other)
-        new_data.append(res.data)
-      return Tensor(new_data)
+      data = [v+other for v in self.data]
+      return Tensor(data)
   
   def sub(self, other):
     if not isinstance(other, Tensor):
@@ -83,19 +82,12 @@ class Tensor:
     
     # Matrix(dim=2) + Vector
     if self.dim == 1 and other.dim == 2:
-      new_data = []
-      for vec in other.data:
-        res = [a-b for a, b in zip(self.data, vec)]	
-        new_data.append(res)
-      return Tensor(new_data)
+      data = [self-v for v in other.data]
+      return Tensor(data)
 
     if self.dim == 2 and other.dim == 1:
-      new_data = []
-      for d in self.data:
-        tmp = Tensor(d)
-        res = tmp.sub(other)
-        new_data.append(res.data)
-      return Tensor(new_data)
+      data = [v-other for v in self.data]
+      return Tensor(data)
   
   def div(self, other):
     if not isinstance(other, Tensor):
@@ -111,16 +103,13 @@ class Tensor:
 
     # 2d/1d
     if self.dim == 2 and other.dim == 1:
-      data = [Tensor(vec).div(other).data for vec in self.data]
+      data = [vec/other for vec in self.data]
       return Tensor(data)
 
     # 1d/2d
     if self.dim == 1 and other.dim == 2:
-      new_data = []
-      for vec in other.data:
-        res = [a/b for a, b in zip(self.data, vec)]	
-        new_data.append(res)
-      return Tensor(new_data)
+      data = [self/vec for vec in other.data]
+      return Tensor(data)
     
   def dot(self, other):
     if not isinstance(other, Tensor):
@@ -136,21 +125,21 @@ class Tensor:
       return prod
 
     if self.dim == 2 and other.dim == 1:
-      new_data = [Tensor(vec).dot(other) for vec in self.data]
+      new_data = [vec@other for vec in self.data]
       return Tensor(new_data)
 
     if self.dim == 1 and other.dim == 2:
       if self.shape[0] != other.shape[0]:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
       
-      data = Tensor((other.shape[1], ))
+      data = Tensor([0] * other.shape[1])
       for i,x in enumerate(self.data):
         intermediate = Tensor([x*w for w in other.data[i]])
-        data = data.add(intermediate)
+        data = data + intermediate
       return data
     
-    if (self.dim == 2 and other.dim == 2):
-      data = [Tensor(v).dot(other).data for v in self.data]
+    if self.dim == 2 and other.dim == 2:
+      data = [v@other for v in self.data]
       return Tensor(data)
   
   def __getitem__(self, indx):
