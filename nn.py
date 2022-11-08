@@ -34,17 +34,17 @@ class Tensor:
     if not isinstance(other, Tensor):
       raise TypeError("Not Tensor")
     
-    # Vector x Vector
+    # v*v
     if self.dim == 1 and other.dim == 1:
       if self.shape != other.shape:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
 
       new_data = [a*b for a, b in zip(self.data, other.data)]	
       return Tensor(new_data)
-    
-    # Matrix(dim=2) x Vector
+    # v*m
     if self.dim == 1 and other.dim == 2:
-      return other.mult(self)
+      return other*self
+    # m*v
     if self.dim == 2 and other.dim == 1:
       data = [v*other for v in self.data]
       return Tensor(data)
@@ -53,17 +53,17 @@ class Tensor:
     if not isinstance(other, Tensor):
       raise TypeError("Not Tensor")
     
-    # Vector + Vector
+    # v + v
     if self.dim == 1 and other.dim == 1:
       if self.shape != other.shape:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
 
       data = [a+b for a, b in zip(self.data, other.data)]	
       return Tensor(data)
-    
-    # Matrix(dim=2) + Vector
+    # v + m
     if self.dim == 1 and other.dim == 2:
       return other+self
+    # m + v
     if self.dim == 2 and other.dim == 1:
       data = [v+other for v in self.data]
       return Tensor(data)
@@ -72,19 +72,18 @@ class Tensor:
     if not isinstance(other, Tensor):
       raise TypeError("Not Tensor")
     
-    # Vector - Vector
+    # v - v
     if self.dim == 1 and other.dim == 1:
       if self.shape != other.shape:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
 
       new_data = [a-b for a, b in zip(self.data, other.data)]	
       return Tensor(new_data)
-    
-    # Matrix(dim=2) + Vector
+    # v - m
     if self.dim == 1 and other.dim == 2:
       data = [self-v for v in other.data]
       return Tensor(data)
-
+    # m - v
     if self.dim == 2 and other.dim == 1:
       data = [v-other for v in self.data]
       return Tensor(data)
@@ -93,20 +92,18 @@ class Tensor:
     if not isinstance(other, Tensor):
       raise TypeError("Not Tensor")
     
-    # Vector - Vector
+    # v / v
     if self.dim == 1 and other.dim == 1:
       if self.shape != other.shape:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
 
       new_data = [a/b for a, b in zip(self.data, other.data)]	
       return Tensor(new_data)
-
-    # 2d/1d
+    # m / v
     if self.dim == 2 and other.dim == 1:
       data = [vec/other for vec in self.data]
       return Tensor(data)
-
-    # 1d/2d
+    # v / m
     if self.dim == 1 and other.dim == 2:
       data = [self/vec for vec in other.data]
       return Tensor(data)
@@ -115,6 +112,7 @@ class Tensor:
     if not isinstance(other, Tensor):
       raise TypeError("Not Tensor")
     
+    # v dot v
     if self.dim == 1 and other.dim == 1:
       if self.shape != other.shape:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
@@ -123,11 +121,7 @@ class Tensor:
       for a, b in zip(self.data, other.data):
         prod += a*b
       return prod
-
-    if self.dim == 2 and other.dim == 1:
-      new_data = [vec@other for vec in self.data]
-      return Tensor(new_data)
-
+    # v dot m
     if self.dim == 1 and other.dim == 2:
       if self.shape[0] != other.shape[0]:
         raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
@@ -137,8 +131,8 @@ class Tensor:
         intermediate = Tensor([x*w for w in other.data[i]])
         data = data + intermediate
       return data
-    
-    if self.dim == 2 and other.dim == 2:
+    # m dot (v or m)
+    if self.dim == 2 and (other.dim == 1 or other.dim == 2):
       data = [v@other for v in self.data]
       return Tensor(data)
   
@@ -178,6 +172,6 @@ def ones(shape):
     return Tensor(data)
   if dim == 2:
     data = []
-    for row in range(shape[0]):
+    for _ in range(shape[0]):
       data.append([1] * shape[1])
     return Tensor(data)
