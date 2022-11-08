@@ -33,30 +33,30 @@ class Testing(unittest.TestCase):
     def test_mult_vector_with_vector(self):
         a = Tensor([1, 2])
         b = Tensor([10, 20])
-        c = a.mult(b)
+        c = a*b
         self.assertEqual([10, 40], c.data)
 
     def test_mult_vector_with_vector_shapes_mismatch_raises(self):
         a = Tensor([1])
         b = Tensor([10, 20])
-        self.assertRaises(RuntimeError, lambda: a.mult(b))
+        self.assertRaises(RuntimeError, lambda: a*b)
     
     def test_mult_2dmatrix_with_vector(self):
         a = Tensor([[1, 2], [3, 4]])
         b = Tensor([10, 20])
-        c = a.mult(b)
+        c = a*b
         self.assertEqual([10, 40], c.data[0])
         self.assertEqual([30, 80], c.data[1])
     
     def test_mult_2dmatrix_with_vector_shapes_mismatch_raises(self):
         a = Tensor([[1, 2], [3, 4]])
         b = Tensor([10, 20, 30])
-        self.assertRaises(RuntimeError, lambda: a.mult(b))
+        self.assertRaises(RuntimeError, lambda: a*b)
 
     def test_mult_vector_with_2dmatrix(self):
         a = Tensor([[1, 2], [3, 4]])
         b = Tensor([10, 20])
-        c = b.mult(a)
+        c = b*a
         self.assertEqual([10, 40], c.data[0])
         self.assertEqual([30, 80], c.data[1])
     
@@ -64,30 +64,29 @@ class Testing(unittest.TestCase):
     def test_add_vector_with_vector(self):
         a = Tensor([1, 2])
         b = Tensor([10, 20])
-        c = a.add(b)
-        self.assertEqual([11, 22], c.data)
+        self.assertEqual([11, 22], (a+b).data)
 
     def test_add_vector_with_vector_shapes_mismatch_raises(self):
         a = Tensor([1])
         b = Tensor([10, 20])
-        self.assertRaises(RuntimeError, lambda: a.add(b))
+        self.assertRaises(RuntimeError, lambda: a+b)
     
     def test_add_2dmatrix_with_vector(self):
         a = Tensor([[1, 2], [3, 4]])
         b = Tensor([10, 20])
-        c = a.add(b)
+        c = a+b
         self.assertEqual([11, 22], c.data[0])
         self.assertEqual([13, 24], c.data[1])
     
     def test_add_2dmatrix_with_vector_shapes_mismatch_raises(self):
         a = Tensor([[1, 2], [3, 4]])
         b = Tensor([10, 20, 30])
-        self.assertRaises(RuntimeError, lambda: a.add(b))
+        self.assertRaises(RuntimeError, lambda: a+b)
 
     def test_add_vector_with_2dmatrix(self):
         a = Tensor([[1, 2], [3, 4]])
         b = Tensor([10, 20])
-        c = b.add(a)
+        c = b+a
         self.assertEqual([11, 22], c.data[0])
         self.assertEqual([13, 24], c.data[1])
     
@@ -95,30 +94,30 @@ class Testing(unittest.TestCase):
     def test_sub_vector_with_vector(self):
         a = Tensor([1, 2])
         b = Tensor([10, 20])
-        c = a.sub(b)
+        c = a-b
         self.assertEqual([-9, -18], c.data)
     
     def test_sub_vector_with_vector_shapes_mismatch_raises(self):
         a = Tensor([1])
         b = Tensor([10, 20])
-        self.assertRaises(RuntimeError, lambda: a.sub(b))
+        self.assertRaises(RuntimeError, lambda: a-b)
 
     def test_sub_2dmatrix_with_vector(self):
         m = Tensor([[1, 2], [3, 4]])
         v = Tensor([10, 20])
-        c = m.sub(v)
+        c = m-v
         self.assertEqual([-9, -18], c.data[0])
         self.assertEqual([-7, -16], c.data[1])
 
     def test_sub_2dmatrix_with_vector_shapes_mismatch_raises(self):
         a = Tensor([[1, 2], [3, 4]])
         b = Tensor([10, 20, 30])
-        self.assertRaises(RuntimeError, lambda: a.sub(b))
+        self.assertRaises(RuntimeError, lambda: a-b)
 
     def test_sub_vector_with_2dmatrix(self):
         m = Tensor([[1, 2], [3, 4]])
         v = Tensor([10, 20])
-        c = v.sub(m)
+        c = v-m
         self.assertEqual([9, 18], c.data[0])
         self.assertEqual([7, 16], c.data[1])
     
@@ -126,71 +125,71 @@ class Testing(unittest.TestCase):
     def test_div_vector_with_vector(self):
         a = Tensor([12, 8])
         b = Tensor([2, 4])
-        c = a.div(b)
+        c = a/b
         self.assertEqual([6, 2], c.data)
     
     def test_div_vector_with_vector_shapes_mismatch_raises(self):
         a = Tensor([1])
         b = Tensor([10, 20])
-        self.assertRaises(RuntimeError, lambda: a.div(b))
+        self.assertRaises(RuntimeError, lambda: a/b)
 
     def test_div_2d_with_vector(self):
         v = Tensor([2, 4])
         m = Tensor([[12, 8], [16, 32]])
-        c = m.div(v)
+        c = m/v
         self.assertEqual([[6, 2], [8, 8]], c.data)
 
     def test_div_vector_with_2d(self):
         v = Tensor([6, 8])
         m = Tensor([[12, 8], [16, 32]])
-        c = v.div(m)
+        c = v/m
         self.assertEqual([[0.5, 1.0], [0.375, 0.25]], c.data)
     
     # Dot
     def test_dot_vector_with_vector(self):
         a = Tensor([1, 2])
         b = Tensor([10, 20])
-        c = a.dot(b)
+        c = a@b
         self.assertEqual(50, c)
-        self.assertEqual(a.dot(b), b.dot(a))
+        self.assertEqual(a@b, b@a)
     
     def test_dot_vector_with_vector_shapes_mismatch_raises(self):
         a = Tensor([1])
         b = Tensor([10, 20])
-        self.assertRaises(RuntimeError, lambda: a.sub(b))
+        self.assertRaises(RuntimeError, lambda: a-b)
     
     def test_dot_2dmatrix_with_vector(self):
         m = Tensor([[1, 2], [3, 4]])
         v = Tensor([10, 20])
-        c = m.dot(v)
+        c = m@v
         self.assertEqual([50, 110], c.data)
 
     def test_dot_2dmatrix_with_vector_shapes_mismatch_raises(self):
         m = Tensor([[1, 2], [3, 4]])
         v = Tensor([10, 20, 30])
-        self.assertRaises(RuntimeError, lambda: m.dot(v))
+        self.assertRaises(RuntimeError, lambda: m@v)
     
     def test_dot_vector_with_2dmatrix(self):
         # 3 * 3x2
         v = Tensor([7, 2, 3])
         m = Tensor([[1, 2], [3, 4], [5, 6]])
-        c = v.dot(m)
+        c = v@m
         self.assertEqual([28, 40], c.data)
         # 3 * 3x3
         v = Tensor([1, 2])
         m = Tensor([[10, 20, 5], [30, 40, 20]])
-        c = v.dot(m)
+        c = v@m
         self.assertEqual([70, 100, 45], c.data)
         # 3 * 3x4
         v = Tensor([1, 2])
         m = Tensor([[10, 20, 5, 30], [30, 40, 20, 15]])
-        c = v.dot(m)
+        c = v@m
         self.assertEqual([70, 100, 45, 60], c.data)
     
     def test_dot_vector_with_2dmatrix_shapes_mismatch_raises(self):
         v = Tensor([10, 20])
         m = Tensor([[1, 2], [3, 4], [5,6]])
-        self.assertRaises(RuntimeError, lambda: v.dot(m))
+        self.assertRaises(RuntimeError, lambda: v@m)
     
     def test_dot_2d_with_2d(self):
         x = Tensor([
@@ -198,7 +197,7 @@ class Testing(unittest.TestCase):
             [6, 2, 7]
             ])
         m = Tensor([[1, 2], [3, 4], [5,6]])
-        c = x.dot(m)
+        c = x@m
         self.assertEqual([28, 40], c.data[0])
         self.assertEqual([47, 62], c.data[1])
 

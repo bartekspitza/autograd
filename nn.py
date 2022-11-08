@@ -153,5 +153,20 @@ class Tensor:
       data = [Tensor(v).dot(other).data for v in self.data]
       return Tensor(data)
   
+  def __add__(self, other):
+    return self.add(other)
+
+  def __sub__(self, other):
+    return self.sub(other)
+
+  def __mul__(self, other):
+    return self.mult(other)
+
+  def __truediv__(self, other):
+    return self.div(other)
+    
+  def __matmul__(self, other):
+    return self.dot(other)
+    
   def __repr__(self):
     return f'Tensor(data={self.data.__repr__()})'
