@@ -1,7 +1,8 @@
 import unittest
-from nn import Tensor
+from nn import Tensor, ones
 
 class Testing(unittest.TestCase):
+
     # Test initialization of Tensors
     # ---------------------------------
     def test_shape_and_dim_withdim1(self):
@@ -25,6 +26,13 @@ class Testing(unittest.TestCase):
         t = Tensor(data)
         self.assertEqual((3, 2, 1), t.shape)
         self.assertEqual(3, t.dim)
+    
+    def test_ones(self):
+        a = ones((3,))
+        self.assertEqual([1, 1, 1], a.data)
+        a = ones((3, 5))
+        self.assertEqual(3, len(a.data))
+        self.assertEqual(5, len(a.data[0]))
 
     # Test operations
     # ---------------------------------
@@ -200,6 +208,8 @@ class Testing(unittest.TestCase):
         c = x@m
         self.assertEqual([28, 40], c.data[0])
         self.assertEqual([47, 62], c.data[1])
+    
+
 
 
 if __name__ == '__main__':

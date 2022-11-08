@@ -153,6 +153,11 @@ class Tensor:
       data = [Tensor(v).dot(other).data for v in self.data]
       return Tensor(data)
   
+  def __getitem__(self, indx):
+    if not isinstance(indx, int):
+      raise RuntimeError("Not implemented")
+    return self.data[indx]
+  
   def __add__(self, other):
     return self.add(other)
 
@@ -170,3 +175,20 @@ class Tensor:
     
   def __repr__(self):
     return f'Tensor(data={self.data.__repr__()})'
+
+def ones(shape):
+  if not isinstance(shape, tuple):
+    raise TypeError("Expected tuple")
+
+  dim = len(shape)
+  if dim == 0 or dim > 2:
+    raise RuntimeError("Invalid size")
+
+  if dim == 1:
+    data = [1] * shape[0]
+    return Tensor(data)
+  if dim == 2:
+    data = []
+    for row in range(shape[0]):
+      data.append([1] * shape[1])
+    return Tensor(data)
