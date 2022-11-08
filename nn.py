@@ -1,3 +1,5 @@
+import builtins
+
 class Tensor:
     def __init__(self, data):
         if not isinstance(data, list):
@@ -158,6 +160,13 @@ class Tensor:
         
     def __repr__(self):
         return f'Tensor(data={self.data.__repr__()})'
+    
+    # Quality of life
+    def tolist(self):
+        if self.dim == 1:
+            return self.data
+        if self.dim == 2:
+            return [t.data for t in self.data]
 
 def ones(shape):
     if not isinstance(shape, tuple):
@@ -174,4 +183,14 @@ def ones(shape):
         data = []
         for _ in range(shape[0]):
             data.append([1] * shape[1])
+        return Tensor(data)
+
+def sum(tensor):
+    if not isinstance(tensor, Tensor):
+        raise TypeError("Expected tensor")
+
+    if tensor.dim == 1:
+        return builtins.sum(tensor.data)
+    if tensor.dim == 2:
+        data = [sum(t) for t in tensor.data]
         return Tensor(data)
