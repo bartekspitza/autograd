@@ -235,6 +235,18 @@ class Testing(unittest.TestCase):
         res = m.exp().tolist()
         self.assertEqual([[1, math.e], [math.e, 1]], res)
 
+    def test_log_vector(self):
+        v = nn.Tensor([-1, 0, 1, 0.3678])
+        res = v.log()
+        self.assertEqual([math.nan, math.nan, 0], res.data[:3])
+        self.assertAlmostEqual(-1, res.data[3], delta=0.01)
+
+    def test_log_matrix(self):
+        m = nn.Tensor([[1, math.e], [math.e, 1]])
+        res = m.log().tolist()
+        self.assertEqual([[0, 1], [1, 0]], res)
+
+
     # Other stuff
     # ---------------------------------
     def test_sum_vector(self):

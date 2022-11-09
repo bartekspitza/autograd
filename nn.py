@@ -167,6 +167,12 @@ class Tensor:
             data = [v@other for v in self.data]
             return Tensor(data)
     
+    def log(self):
+        if self.dim == 1:
+            return Tensor([math.log(x) if x > 0 else math.nan for x in self.data])
+        if self.dim == 2:
+            return Tensor([v.log() for v in self.data])
+    
     def exp(self):
         if self.dim == 1:
             return Tensor([math.exp(x) for x in self.data])
