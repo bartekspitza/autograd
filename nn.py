@@ -1,4 +1,5 @@
 import builtins
+import math
 
 class Tensor:
     def __init__(self, data):
@@ -9,8 +10,8 @@ class Tensor:
         self.shape = ()
         curr_dim = data
         while True:
-            if isinstance(curr_dim, list):
-                curr_dim_len = len(curr_dim)
+            if isinstance(curr_dim, (list, Tensor)):
+                curr_dim_len = len(curr_dim) if isinstance(curr_dim, list) else len(curr_dim.data)
                 self.shape = self.shape + (curr_dim_len, )
 
                 if curr_dim_len > 0:
@@ -166,6 +167,12 @@ class Tensor:
             data = [v@other for v in self.data]
             return Tensor(data)
     
+    def exp(self):
+        if self.dim == 1:
+            return Tensor([math.e**x for x in self.data])
+        if self.dim == 2:
+            return Tensor([v.exp() for v in self.data])
+        
     def __getitem__(self, indx):
         if not isinstance(indx, int):
             raise RuntimeError("Not implemented")

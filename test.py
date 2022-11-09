@@ -1,5 +1,6 @@
 import unittest
 import nn
+import math
 
 class Testing(unittest.TestCase):
 
@@ -221,6 +222,18 @@ class Testing(unittest.TestCase):
         c = x@m
         self.assertEqual([28, 40], c[0].data)
         self.assertEqual([47, 62], c[1].data)
+    
+    def test_exp_vector(self):
+        v = nn.Tensor([-1, 0, 1, 2])
+        res = v.exp()
+        self.assertAlmostEqual(0.3678, res.data[0], delta=0.0001)
+        self.assertAlmostEqual(1.0, res.data[1])
+        self.assertAlmostEqual(math.e, res.data[2])
+    
+    def test_exp_matrix(self):
+        m = nn.Tensor([[0, 1], [1, 0]])
+        res = m.exp().tolist()
+        self.assertEqual([[1, math.e], [math.e, 1]], res)
 
     # Other stuff
     # ---------------------------------
