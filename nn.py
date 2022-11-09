@@ -180,9 +180,9 @@ class Tensor:
             return Tensor([v.exp() for v in self.data])
         
     def __getitem__(self, indx):
-        if not isinstance(indx, int):
-            raise RuntimeError("Not implemented")
-        return self.data[indx]
+        if isinstance(indx, int):
+            return self.data[indx]
+        raise RuntimeError("Not implemented")
     
     def __add__(self, other):
         return self.add(other)

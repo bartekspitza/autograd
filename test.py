@@ -26,6 +26,16 @@ class Testing(unittest.TestCase):
         self.assertEqual(3, len(a.data))
         self.assertEqual(5, len(a[0].data))
 
+    def test_subscript_vector(self):
+        m = nn.Tensor([1,2])
+        self.assertEqual(1, m[0])
+        self.assertEqual(2, m[1])
+
+    def test_subscript_matrix_with_1d(self):
+        m = nn.Tensor([[1,2], [3,4]])
+        self.assertEqual([1,2], m[0].data)
+        self.assertEqual([3,4], m[1].data)
+
     # Test operations
     # ---------------------------------
 
