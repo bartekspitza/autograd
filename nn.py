@@ -169,7 +169,7 @@ class Tensor:
     
     def exp(self):
         if self.dim == 1:
-            return Tensor([math.e**x for x in self.data])
+            return Tensor([math.exp(x) for x in self.data])
         if self.dim == 2:
             return Tensor([v.exp() for v in self.data])
         
