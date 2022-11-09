@@ -11,7 +11,7 @@ class Tensor:
         curr_dim = data
         while True:
             if isinstance(curr_dim, (list, Tensor)):
-                curr_dim_len = len(curr_dim) if isinstance(curr_dim, list) else len(curr_dim.data)
+                curr_dim_len = len(curr_dim)
                 self.shape = self.shape + (curr_dim_len, )
 
                 if curr_dim_len > 0:
@@ -178,11 +178,6 @@ class Tensor:
             return Tensor([math.exp(x) for x in self.data])
         if self.dim == 2:
             return Tensor([v.exp() for v in self.data])
-        
-    def __getitem__(self, indx):
-        if isinstance(indx, int):
-            return self.data[indx]
-        raise RuntimeError("Not implemented")
     
     def __add__(self, other):
         return self.add(other)
@@ -198,11 +193,19 @@ class Tensor:
         
     def __matmul__(self, other):
         return self.dot(other)
+    
+    def __len__(self):
+        return len(self.data)
         
     def __repr__(self):
         return f'Tensor(data={self.data.__repr__()})'
     
     # Quality of life
+    def __getitem__(self, indx):
+        if isinstance(indx, int):
+            return self.data[indx]
+        raise RuntimeError("Not implemented")
+
     def tolist(self):
         if self.dim == 1:
             return self.data
