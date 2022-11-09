@@ -3,9 +3,14 @@ import math
 
 class Tensor:
     def __init__(self, data):
+        if isinstance(data, Tensor):
+            data = data.data
+
         if not isinstance(data, list):
             raise TypeError("Expected python list")
 
+        # Init data, shape, dim etc
+        # --------------------------
         self.data = data
         self.shape = ()
         curr_dim = data
@@ -22,16 +27,12 @@ class Tensor:
                 break
         self.dim = len(self.shape)
 
-        if self.dim == 1:
-            return
-        if self.dim > 2:
+        if self.dim > 2: 
             raise Exception("Dimensions over 2 not implemented")
 
         # For 2d tensors, convert the nested arrays to tensors
-        # Watchout for already "good" tensors
-        if self.shape[1] > 0 and isinstance(self.data[0], Tensor):
-            return
-        self.data = [Tensor(vec) for vec in self.data]
+        if self.dim == 2 and self.shape[1] > 0 and isinstance(self.data[0], list):
+            self.data = [Tensor(vec) for vec in self.data]
     
     def mult(self, other):
         if isinstance(other, (int, float)):
@@ -53,7 +54,7 @@ class Tensor:
             return Tensor(new_data)
         # v*m
         if self.dim == 1 and other.dim == 2:
-            return other*self;
+            return other*self
         # m*v
         if self.dim == 2 and other.dim == 1:
             data = [v*other for v in self.data]
