@@ -272,14 +272,19 @@ def sum(tensor):
         data = [sum(t) for t in tensor.data]
         return Tensor(data)
 
-def multinomial(input, num_samples, replacement=True):
+def multinomial(input, num_samples, replacement=True, indices=None):
     if input.dim != 2:
         raise RuntimeError("Only dim=2 supported")
     
-    out = ones((num_samples, input.shape[1]))
+    new_shape = list(input.shape)
+    new_shape[0] = num_samples
+    out = ones(tuple(new_shape))
     end = len(input)
     for i in range(num_samples):
         x = random.randrange(0, end)
         out[i] = input[x]
+
+        if not indices is None:
+            indices.append(x)
     
     return out
