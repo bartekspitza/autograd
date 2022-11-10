@@ -1,5 +1,6 @@
 import builtins
 import math
+import random
 
 class Tensor:
     def __init__(self, data, requires_grad=False):
@@ -206,6 +207,10 @@ class Tensor:
         return f'Tensor(data={self.data.__repr__()})'
     
     # Quality of life
+    def __setitem__(self, key, value):
+        if self.dim == 1:
+            self.data[key] = value
+
     def __getitem__(self, indx):
         if isinstance(indx, int):
             return self.data[indx]
@@ -239,6 +244,22 @@ def ones(shape):
         for _ in range(shape[0]):
             data.append([1] * shape[1])
         return Tensor(data)
+
+def randn(shape):
+    if not isinstance(shape, tuple):
+        raise TypeError("Expected tuple")
+    
+    dim = len(shape)
+    if dim == 0 or dim > 2:
+        raise RuntimeError("Invalid size")
+
+    if dim == 1:
+        data = [random.gauss(mu=0.0, sigma=1.0) for _ in range(shape[0])]
+        return Tensor(data)
+    if dim == 2:
+        data = [randn(shape[1:]) for _ in range(shape[0])]
+        return Tensor(data)
+
 
 def sum(tensor):
     if not isinstance(tensor, Tensor):
