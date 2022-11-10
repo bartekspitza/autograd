@@ -262,7 +262,6 @@ def randn(shape):
         data = [randn(shape[1:]) for _ in range(shape[0])]
         return Tensor(data)
 
-
 def sum(tensor):
     if not isinstance(tensor, Tensor):
         raise TypeError("Expected tensor")
@@ -272,3 +271,15 @@ def sum(tensor):
     if tensor.dim == 2:
         data = [sum(t) for t in tensor.data]
         return Tensor(data)
+
+def multinomial(input, num_samples, replacement=True):
+    if input.dim != 2:
+        raise RuntimeError("Only dim=2 supported")
+    
+    out = ones((num_samples, input.shape[1]))
+    end = len(input)
+    for i in range(num_samples):
+        x = random.randrange(0, end)
+        out[i] = input[x]
+    
+    return out
