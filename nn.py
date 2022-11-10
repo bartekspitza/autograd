@@ -208,8 +208,10 @@ class Tensor:
     
     # Quality of life
     def __setitem__(self, key, value):
-        if self.dim == 1:
-            self.data[key] = value
+        if not isinstance(key, int):
+            raise RuntimeError("Expected int")
+
+        self.data[key] = value
 
     def __getitem__(self, indx):
         if isinstance(indx, int):

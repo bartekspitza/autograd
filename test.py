@@ -19,22 +19,7 @@ class Testing(unittest.TestCase):
         self.assertEqual(2, t.dim)
         self.assertEqual(nn.Tensor, t[0].__class__)
     
-    def test_ones(self):
-        a = nn.ones((3,))
-        self.assertEqual([1, 1, 1], a.data)
-        a = nn.ones((3, 5))
-        self.assertEqual(3, len(a.data))
-        self.assertEqual(5, len(a[0].data))
 
-    def test_subscript_vector(self):
-        m = nn.Tensor([1,2])
-        self.assertEqual(1, m[0])
-        self.assertEqual(2, m[1])
-
-    def test_subscript_matrix_with_1d(self):
-        m = nn.Tensor([[1,2], [3,4]])
-        self.assertEqual([1,2], m[0].data)
-        self.assertEqual([3,4], m[1].data)
 
     # Test operations
     # ---------------------------------
@@ -234,6 +219,7 @@ class Testing(unittest.TestCase):
         self.assertEqual([28, 40], c[0].data)
         self.assertEqual([47, 62], c[1].data)
     
+    # exp(x)
     def test_exp_vector(self):
         v = nn.Tensor([-1, 0, 1, 2])
         res = v.exp()
@@ -246,6 +232,7 @@ class Testing(unittest.TestCase):
         res = m.exp().tolist()
         self.assertEqual([[1, math.e], [math.e, 1]], res)
 
+    # log(x)
     def test_log_vector(self):
         v = nn.Tensor([-1, 0, 1, 0.3678])
         res = v.log()
@@ -257,6 +244,7 @@ class Testing(unittest.TestCase):
         res = m.log().tolist()
         self.assertEqual([[0, 1], [1, 0]], res)
     
+    # exp(x)
     def test_tanh_vector(self):
         v = nn.Tensor([-1, 0, 1])
         res = nn.tanh(v)
@@ -279,7 +267,29 @@ class Testing(unittest.TestCase):
         res = v + 2
         res.grad = nn.Tensor([1, 1])
 
-    # Other stuff
+    # Other stuff, subscript, getitem, setitem etc
+    # ---------------------------------
+    def test_getitem_vector(self):
+        m = nn.Tensor([1,2])
+        self.assertEqual(1, m[0])
+        self.assertEqual(2, m[1])
+
+    def test_getitem_matrix_with_1d(self):
+        m = nn.Tensor([[1,2], [3,4]])
+        self.assertEqual([1,2], m[0].data)
+        self.assertEqual([3,4], m[1].data)
+
+    def test_setitem_vector(self):
+        v = nn.Tensor([1, 2])
+        v[0] = 5
+        self.assertEqual(5, v[0])
+
+    def test_setitem_matrix(self):
+        m = nn.Tensor([[1,2], [3,4]])
+        m[0] = nn.Tensor([10, 20])
+        self.assertEqual([10, 20], m[0].data)
+
+    # Other functions
     # ---------------------------------
     def test_sum_vector(self):
         t = nn.Tensor([1, 2, 3])
@@ -289,6 +299,13 @@ class Testing(unittest.TestCase):
         t = nn.Tensor([[1, 2, 3], [7, 3]])
         c = nn.sum(t)
         self.assertEqual([6, 10], c.data)
+    
+    def test_ones(self):
+        a = nn.ones((3,))
+        self.assertEqual([1, 1, 1], a.data)
+        a = nn.ones((3, 5))
+        self.assertEqual(3, len(a.data))
+        self.assertEqual(5, len(a[0].data))
 
 if __name__ == '__main__':
     unittest.main()
