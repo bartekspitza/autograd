@@ -54,6 +54,10 @@ class Testing(unittest.TestCase):
         c = b*a
         self.assertEqual([10, 40], c[0].data)
         self.assertEqual([30, 80], c[1].data)
+    def test_mult_matrix_with_matrix(self):
+        a = nn.Tensor([[1, 2], [3, 4]])
+        res = a*a
+        self.assertEqual([[1, 4], [9, 16]], res.tolist())
     def test_mult_scalar(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])

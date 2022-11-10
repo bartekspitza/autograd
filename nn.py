@@ -59,11 +59,15 @@ class Tensor:
             return Tensor(new_data)
         # v*m
         if self.dim == 1 and other.dim == 2:
-            return other*self
+            return [self*v for v in other.data]
         # m*v
         if self.dim == 2 and other.dim == 1:
             data = [v*other for v in self.data]
             return Tensor(data)
+        if self.dim == 2 and other.dim == 2:
+            data = [a*b for a,b in zip(self.data, other.data)]
+            return Tensor(data)
+
     
     def add(self, other):
         if isinstance(other, (int, float)):
