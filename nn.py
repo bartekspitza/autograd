@@ -216,6 +216,10 @@ class Tensor:
     def __getitem__(self, indx):
         if isinstance(indx, int):
             return self.data[indx]
+        if isinstance(indx, list):
+            data = [self[num] for num in indx]
+            return Tensor(data)
+
         raise RuntimeError("Not implemented")
 
     def tolist(self):

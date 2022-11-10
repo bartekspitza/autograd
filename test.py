@@ -274,10 +274,18 @@ class Testing(unittest.TestCase):
         self.assertEqual(1, m[0])
         self.assertEqual(2, m[1])
 
-    def test_getitem_matrix_with_1d(self):
+    def test_getitem_matrix(self):
         m = nn.Tensor([[1,2], [3,4]])
         self.assertEqual([1,2], m[0].data)
         self.assertEqual([3,4], m[1].data)
+
+    def test_getmultipleitem_vector(self):
+        m = nn.Tensor([1,2])
+        self.assertEqual([2, 1], m[[1, 0]].data)
+
+    def test_getmultipleitem_matrix(self):
+        m = nn.Tensor([[1,2], [3,4]])
+        self.assertEqual([[3,4], [1,2]], m[[1, 0]].tolist())
 
     def test_setitem_vector(self):
         v = nn.Tensor([1, 2])
