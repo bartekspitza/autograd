@@ -2,13 +2,14 @@ import builtins
 import math
 
 class Tensor:
-    def __init__(self, data):
+    def __init__(self, data, requires_grad=False):
         if isinstance(data, Tensor):
             data = data.data
-
         if not isinstance(data, list):
             raise TypeError("Expected python list")
-
+        
+        self.requires_grad = requires_grad
+        self.backward = None
         # Init data, shape, dim etc
         # --------------------------
         self.data = data
@@ -33,6 +34,9 @@ class Tensor:
         # For 2d tensors, convert the nested arrays to tensors
         if self.dim == 2 and self.shape[1] > 0 and isinstance(self.data[0], list):
             self.data = [Tensor(vec) for vec in self.data]
+        
+        if self.requires_grad and self.dim == 1 and self.shape[0] > 0:
+            self.grad = Tensor([0] * self.shape[0])
     
     def mult(self, other):
         if isinstance(other, (int, float)):
@@ -212,6 +216,12 @@ class Tensor:
             return self.data
         if self.dim == 2:
             return [t.data for t in self.data]
+
+def tanh(tensor):
+    if tensor.dim == 1:
+        return Tensor([math.tanh(x) for x in tensor.data])
+    if tensor.dim == 2:
+        return Tensor([tanh(t) for t in tensor.data])
 
 def ones(shape):
     if not isinstance(shape, tuple):

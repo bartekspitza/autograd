@@ -104,12 +104,13 @@ class Testing(unittest.TestCase):
         c = b+a
         self.assertEqual([11, 22], c[0].data)
         self.assertEqual([13, 24], c[1].data)
+
     def test_add_scalar(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
         self.assertEqual([8, 10], (v+2).data)
         self.assertEqual([[14, 10], [18, 34]], (m+2).tolist())
-    
+
     # Sub
     def test_sub_vector_with_vector(self):
         a = nn.Tensor([1, 2])
@@ -255,7 +256,28 @@ class Testing(unittest.TestCase):
         m = nn.Tensor([[1, math.e], [math.e, 1]])
         res = m.log().tolist()
         self.assertEqual([[0, 1], [1, 0]], res)
+    
+    def test_tanh_vector(self):
+        v = nn.Tensor([-1, 0, 1])
+        res = nn.tanh(v)
+        self.assertAlmostEqual(-0.7616, res[0], delta=0.00001)
+        self.assertAlmostEqual(0, res[1])
+        self.assertAlmostEqual(0.7616, res[2], delta=0.00001)
+    
+    def test_tanh_matrix(self):
+        v = nn.Tensor([[-1, 0, 1]])
+        res = nn.tanh(v)
+        res = res[0]
+        self.assertAlmostEqual(-0.7616, res[0], delta=0.00001)
+        self.assertAlmostEqual(0, res[1])
+        self.assertAlmostEqual(0.7616, res[2], delta=0.00001)
 
+    # Backprop
+    # ---------------------------------
+    def test_add_grad(self):
+        v = nn.Tensor([1, 2])
+        res = v + 2
+        res.grad = nn.Tensor([1, 1])
 
     # Other stuff
     # ---------------------------------
