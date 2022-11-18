@@ -3,7 +3,7 @@ import math
 import random
 
 class Tensor:
-    def __init__(self, data, requires_grad=False):
+    def __init__(self, data, requires_grad=False, backward=None):
         if isinstance(data, Tensor):
             data = data.data
         if not isinstance(data, (list, int, float)):
@@ -11,7 +11,7 @@ class Tensor:
         
         self.data = data
         self.requires_grad = requires_grad
-        self.backward = None
+        self.backward = backward
 
         # Compute shape
         self.shape = ()
@@ -24,12 +24,30 @@ class Tensor:
 
         # For 2d tensors, convert the nested arrays to tensors
         if self.dim == 2 and self.shape[1] > 0 and isinstance(self.data[0], list):
-            self.data = [Tensor(vec) for vec in self.data]
+            self.data = [Tensor(vec, requires_grad=self.requires_grad) for vec in self.data]
         
         if self.requires_grad and self.dim == 1 and self.shape[0] > 0:
-            self.grad = Tensor([0] * self.shape[0])
+            self._grad = Tensor([0] * self.shape[0])
 
     dim = property(lambda x: len(x.shape))
+
+    def get_grad(self):
+        if self.dim == 1:
+            return self._grad
+        if self.dim == 2:
+            return Tensor([vec.grad for vec in self.data])
+    
+    def set_grad(self, x):
+        if x == 1:
+            if self.dim == 1:
+                self._grad = Tensor([1] * len(self))
+            elif self.dim == 2:
+                for vec in self.data:
+                    vec.grad = 1
+        else:
+            self._grad = x
+    
+    grad = property(get_grad, set_grad)
     
     def __mul__(self, x):
         if isinstance(x, (int, float)):
@@ -66,10 +84,20 @@ class Tensor:
         if dims == (1,1): 
             if self.shape != x.shape:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
-            return Tensor([a+b for a, b in zip(self.data, x.data)])
+
+            data = [a+b for a, b in zip(self.data, x.data)]
+            out = Tensor(data, requires_grad=self.requires_grad)
+            def backward():
+                self.grad = Tensor([1] * len(self)) * out.grad
+                x.grad = Tensor([1] * len(self)) * out.grad
+            out.backward = backward
+            return out
 
         if dims == (1,2):
-            return Tensor([self+v for v in x.data])
+            data = [self+v for v in x.data]
+            def back(): 
+                for v in data: v.backward()
+            return Tensor(data, backward=back)
     
     def __sub__(self, x):
         if isinstance(x, (int, float)):
@@ -239,3 +267,24 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
+
+a = Tensor([[1, 1], [2,2]], requires_grad=True)
+b = Tensor([2,2], requires_grad=True)
+c = a+b
+
+c.grad = 1
+
+print('----op: add')
+print('a=', a)
+print('b=', b)
+print('a+b=', c)
+print('a-grad', a.grad.data)
+print('b-grad', b.grad.data)
+print('c-grad', c.grad.data)
+
+c.backward()
+print('----backwards')
+
+print('a-grad', a.grad.data)
+print('b-grad', b.grad.data)
+print('c-grad', c.grad.data)

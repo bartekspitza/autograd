@@ -265,10 +265,29 @@ class Testing(unittest.TestCase):
 
     # Backprop
     # ---------------------------------
-    def test_add_grad(self):
-        v = nn.Tensor([1, 2])
-        res = v + 2
-        res.grad = nn.Tensor([1, 1])
+    def test_grad_add_vec_and_vec(self):
+        a = nn.Tensor([2, 2], requires_grad=True)
+        b = nn.Tensor([1, 1], requires_grad=True)
+        c = a+b; c.grad=1
+        c.backward()
+        self.assertEqual([1, 1], a.grad.data)
+        self.assertEqual([1, 1], b.grad.data)
+
+    def test_grad_add_mat_and_vec(self):
+        a = nn.Tensor([[1,1], [2,2]], requires_grad=True)
+        b = nn.Tensor([2, 2], requires_grad=True)
+        c = a+b; c.grad=1
+        c.backward()
+        self.assertEqual([[1,1], [1,1]], a.grad.tolist())
+        self.assertEqual([1,1], b.grad.data)
+    
+    def test_grad_add_vec_and_mat(self):
+        a = nn.Tensor([[1,1], [2,2]], requires_grad=True)
+        b = nn.Tensor([2, 2], requires_grad=True)
+        c = b+a; c.grad=1
+        c.backward()
+        self.assertEqual([[1,1], [1,1]], a.grad.tolist())
+        self.assertEqual([1,1], b.grad.data)
 
     # Other stuff, subscript, getitem, setitem etc
     # ---------------------------------
