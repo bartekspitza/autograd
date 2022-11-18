@@ -3,32 +3,24 @@ import math
 import random
 
 class Tensor:
+    dim = property(lambda x: len(x.shape))
+
     def __init__(self, data, requires_grad=False):
         if isinstance(data, Tensor):
             data = data.data
         if not isinstance(data, list):
             raise TypeError("Expected python list")
         
+        self.data = data
         self.requires_grad = requires_grad
         self.backward = None
-        # Init data, shape, dim etc
-        # --------------------------
-        self.data = data
+
+        # Compute shape
         self.shape = ()
-        curr_dim = data
-        while True:
-            if isinstance(curr_dim, (list, Tensor)):
-                curr_dim_len = len(curr_dim)
-                self.shape = self.shape + (curr_dim_len, )
-
-                if curr_dim_len > 0:
-                    curr_dim = curr_dim[0]
-                else:
-                    break
-            else:
-                break
-        self.dim = len(self.shape)
-
+        curr = data
+        while isinstance(curr, (list, Tensor)) and len(curr) != 0:
+            self.shape += (len(curr), )
+            curr = curr[0]
         if self.dim > 2: 
             raise Exception("Dimensions over 2 not implemented")
 
@@ -68,7 +60,6 @@ class Tensor:
             data = [a*b for a,b in zip(self.data, other.data)]
             return Tensor(data)
 
-    
     def add(self, other):
         if isinstance(other, (int, float)):
             if self.dim == 1:
@@ -161,6 +152,7 @@ class Tensor:
             prod = 0
             for a, b in zip(self.data, other.data):
                 prod += a*b
+            #return Tensor(prod)
             return prod
         # v dot m
         if self.dim == 1 and other.dim == 2:
@@ -209,6 +201,8 @@ class Tensor:
         
     def __repr__(self):
         return f'Tensor(data={self.data.__repr__()})'
+    
+    
     
     # Quality of life
     def __setitem__(self, key, value):
@@ -296,3 +290,7 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
+
+
+test = Tensor([[2,3],[4,5]])
+test1 = Tensor([4,5])
