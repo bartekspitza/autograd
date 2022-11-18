@@ -171,9 +171,8 @@ class Testing(unittest.TestCase):
     def test_dot_vector_with_vector(self):
         a = nn.Tensor([1, 2])
         b = nn.Tensor([10, 20])
-        c = a@b
-        self.assertEqual(50, c)
-        self.assertEqual(a@b, b@a)
+        self.assertEqual(50, (a@b).data)
+        self.assertEqual(50, (b@a).data)
     
     def test_dot_vector_with_vector_shapes_mismatch_raises(self):
         a = nn.Tensor([1])

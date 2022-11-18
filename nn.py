@@ -3,13 +3,11 @@ import math
 import random
 
 class Tensor:
-    dim = property(lambda x: len(x.shape))
-
     def __init__(self, data, requires_grad=False):
         if isinstance(data, Tensor):
             data = data.data
-        if not isinstance(data, list):
-            raise TypeError("Expected python list")
+        if not isinstance(data, (list, int, float)):
+            raise TypeError("Cant init with type " + type(data))
         
         self.data = data
         self.requires_grad = requires_grad
@@ -30,6 +28,8 @@ class Tensor:
         
         if self.requires_grad and self.dim == 1 and self.shape[0] > 0:
             self.grad = Tensor([0] * self.shape[0])
+
+    dim = property(lambda x: len(x.shape))
     
     def mult(self, other):
         if isinstance(other, (int, float)):
@@ -141,21 +141,17 @@ class Tensor:
             return Tensor(data)
         
     def dot(self, other):
-        if not isinstance(other, Tensor):
-            raise TypeError("Not Tensor")
+        dims = (self.dim, other.dim)
         
-        # v dot v
-        if self.dim == 1 and other.dim == 1:
+        if dims == (1, 1):
             if self.shape != other.shape:
                 raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
 
             prod = 0
-            for a, b in zip(self.data, other.data):
-                prod += a*b
-            #return Tensor(prod)
-            return prod
-        # v dot m
-        if self.dim == 1 and other.dim == 2:
+            for a, b in zip(self.data, other.data): prod += a*b
+            return Tensor(prod)
+
+        if dims == (1, 2):
             if self.shape[0] != other.shape[0]:
                 raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
             
@@ -164,10 +160,9 @@ class Tensor:
                 intermediate = Tensor([x*w for w in other.data[i]])
                 data = data + intermediate
             return data
-        # m dot (v or m)
-        if self.dim == 2 and (other.dim == 1 or other.dim == 2):
-            data = [v@other for v in self.data]
-            return Tensor(data)
+
+        if dims == (2,1) or dims == (2,2):
+            return Tensor([(v@other).data for v in self.data])
     
     def log(self):
         if self.dim == 1:
@@ -201,7 +196,6 @@ class Tensor:
         
     def __repr__(self):
         return f'Tensor(data={self.data.__repr__()})'
-    
     
     
     # Quality of life
@@ -290,7 +284,3 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
-
-
-test = Tensor([[2,3],[4,5]])
-test1 = Tensor([4,5])
