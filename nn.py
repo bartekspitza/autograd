@@ -109,6 +109,12 @@ class Tensor:
             def back(): 
                 for v in data: v.backward()
             return Tensor(data, backward=back)
+        
+        if dims == (2,2):
+            data = [a+b for a,b in zip(self.data, x.data)]
+            def back(): 
+                for v in data: v.backward()
+            return Tensor(data, backward=back)
     
     def __sub__(self, x):
         if isinstance(x, (int, float)):

@@ -86,6 +86,12 @@ class Testing(unittest.TestCase):
         a = nn.Tensor([[1, 2], [3, 4]])
         b = nn.Tensor([10, 20, 30])
         self.assertRaises(RuntimeError, lambda: a+b)
+    
+    def test_add_mat_and_mat(self):
+        a = nn.Tensor([[1, 2], [3, 4]])
+        b = nn.Tensor([[5, 6], [7, 8]])
+        self.assertEqual([[6,8], [10, 12]], (a+b).tolist())
+        self.assertEqual([[6,8], [10, 12]], (b+a).tolist())
 
     def test_add_vector_with_2dmatrix(self):
         a = nn.Tensor([[1, 2], [3, 4]])
@@ -265,6 +271,7 @@ class Testing(unittest.TestCase):
 
     # Backprop
     # ---------------------------------
+    # Add
     def test_grad_add_vec_and_vec(self):
         a = nn.Tensor([2, 2], requires_grad=True)
         b = nn.Tensor([1, 1], requires_grad=True)
@@ -284,11 +291,23 @@ class Testing(unittest.TestCase):
     def test_grad_add_vec_and_mat(self):
         a = nn.Tensor([[1,1], [2,2]], requires_grad=True)
         b = nn.Tensor([2, 2], requires_grad=True)
-        c = b+a; c.grad=1
-        c.backward()
+        c = b+a; c.grad=1; c.backward()
         self.assertEqual([[1,1], [1,1]], a.grad.tolist())
         self.assertEqual([1,1], b.grad.data)
+
+    def test_grad_add_mat_and_mat(self):
+        a = nn.Tensor([[1, 2], [3, 4]], requires_grad=True)
+        b = nn.Tensor([[5, 6], [7, 8]], requires_grad=True)
+        c = b+a; c.grad=1; c.backward()
+        self.assertEqual([[1,1], [1,1]], a.grad.tolist())
+        self.assertEqual([[1,1], [1,1]], b.grad.tolist())
+
+        a.grad=None; b.grad:None; 
+        c = b+a; c.grad=1; c.backward()
+        self.assertEqual([[1,1], [1,1]], a.grad.tolist())
+        self.assertEqual([[1,1], [1,1]], b.grad.tolist())
     
+    # Mult
     def test_grad_mult_vec_and_vec(self):
         a = nn.Tensor([2, 2], requires_grad=True)
         b = nn.Tensor([4, 4], requires_grad=True)
