@@ -288,6 +288,39 @@ class Testing(unittest.TestCase):
         c.backward()
         self.assertEqual([[1,1], [1,1]], a.grad.tolist())
         self.assertEqual([1,1], b.grad.data)
+    
+    def test_grad_mult_vec_and_vec(self):
+        a = nn.Tensor([2, 2], requires_grad=True)
+        b = nn.Tensor([4, 4], requires_grad=True)
+        c = a*b; c.grad=1
+        c.backward()
+        self.assertEqual([4, 4], a.grad.data)
+        self.assertEqual([2, 2], b.grad.data)
+    
+    def test_grad_mult_mat_and_vec(self):
+        a = nn.Tensor([[1,2], [3, 4]], requires_grad=True)
+        b = nn.Tensor([5,6], requires_grad=True)
+        c = a*b; c.grad=1; c.backward()
+
+        self.assertEqual([[5, 6], [5, 6]], a.grad.tolist())
+        self.assertEqual([4, 6], b.grad.data)
+    
+    def test_grad_mult_vec_and_mat(self):
+        a = nn.Tensor([[1,2], [3, 4]], requires_grad=True)
+        b = nn.Tensor([5,6], requires_grad=True)
+        c = b*a; c.grad=1; c.backward()
+
+        self.assertEqual([[5, 6], [5, 6]], a.grad.tolist())
+        self.assertEqual([4, 6], b.grad.data)
+    
+    def test_grad_mult_mat_and_mat(self):
+        a = nn.Tensor([[1,2], [3, 4]], requires_grad=True)
+        b = nn.Tensor([[5,6], [7,8]], requires_grad=True)
+        c = b*a; c.grad=1; c.backward()
+
+        self.assertEqual([[5, 6], [7, 8]], a.grad.tolist())
+        self.assertEqual([[1, 2], [3, 4]], b.grad.tolist())
+
 
     # Other stuff, subscript, getitem, setitem etc
     # ---------------------------------

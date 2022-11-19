@@ -62,13 +62,25 @@ class Tensor:
         if dims == (1,1):
             if self.shape != x.shape: 
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
-            return Tensor([a*b for a, b in zip(self.data, x.data)])
+
+            data = [a*b for a, b in zip(self.data, x.data)]
+            def backward():
+                self.grad += x * out.grad
+                x.grad = self * out.grad
+            out = Tensor(data, requires_grad=self.requires_grad, backward=backward)
+            return out
 
         if dims == (1,2): 
-            return Tensor([self*v for v in x.data])
+            data = [self*v for v in x.data]
+            def back(): 
+                for v in data: v.backward()
+            return Tensor(data, backward=back)
 
         if dims == (2,2): 
-            return Tensor([a*b for a,b in zip(self.data, x.data)])
+            data = [a*b for a,b in zip(self.data, x.data)]
+            def back(): 
+                for v in data: v.backward()
+            return Tensor(data, backward=back)
 
     def __add__(self, x):
         if isinstance(x, (int, float)):
@@ -86,11 +98,10 @@ class Tensor:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
 
             data = [a+b for a, b in zip(self.data, x.data)]
-            out = Tensor(data, requires_grad=self.requires_grad)
             def backward():
                 self.grad = Tensor([1] * len(self)) * out.grad
                 x.grad = Tensor([1] * len(self)) * out.grad
-            out.backward = backward
+            out = Tensor(data, requires_grad=self.requires_grad, backward=backward)
             return out
 
         if dims == (1,2):
@@ -267,24 +278,3 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
-
-a = Tensor([[1, 1], [2,2]], requires_grad=True)
-b = Tensor([2,2], requires_grad=True)
-c = a+b
-
-c.grad = 1
-
-print('----op: add')
-print('a=', a)
-print('b=', b)
-print('a+b=', c)
-print('a-grad', a.grad.data)
-print('b-grad', b.grad.data)
-print('c-grad', c.grad.data)
-
-c.backward()
-print('----backwards')
-
-print('a-grad', a.grad.data)
-print('b-grad', b.grad.data)
-print('c-grad', c.grad.data)
