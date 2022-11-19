@@ -339,6 +339,21 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([[5, 6], [7, 8]], a.grad.tolist())
         self.assertEqual([[1, 2], [3, 4]], b.grad.tolist())
+    
+    # Div
+    def test_grad_div_vec_and_vec(self):
+        x1 = nn.Tensor([2, 5, 5,   0.5], requires_grad=True)
+        x2 = nn.Tensor([5, 2, 0.5, 5  ], requires_grad=True)
+        c = x1/x2; c.grad=1; c.backward()
+        
+        self.assertAlmostEqual(0.2000, x1.grad[0], delta=0.0001)
+        self.assertAlmostEqual(-0.0800, x2.grad[0], delta=0.0001)
+        self.assertAlmostEqual(0.5000, x1.grad[1], delta=0.0001)
+        self.assertAlmostEqual(-1.2500, x2.grad[1], delta=0.0001)
+        self.assertAlmostEqual(2, x1.grad[2], delta=0.0001)
+        self.assertAlmostEqual(-20, x2.grad[2], delta=0.0001)
+        self.assertAlmostEqual(0.2, x1.grad[3], delta=0.0001)
+        self.assertAlmostEqual(-0.0200, x2.grad[3], delta=0.0001)
 
 
     # Other stuff, subscript, getitem, setitem etc

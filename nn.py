@@ -148,8 +148,15 @@ class Tensor:
         if dims == (1,1):
             if self.shape != x.shape:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
+            
+            def a_div_b_dda(a, res): return res/a                # d/dx x/y
+            def a_div_b_ddb(a, b):   return -a * math.pow(b, -2) # d/dy x/y
 
-            return Tensor([a/b for a, b in zip(self.data, x.data)])
+            out = [a/b for a, b in zip(self.data, x.data)]
+            def back():
+                self.grad += Tensor([a_div_b_dda(a, b) for a,b in zip(self.data, out)])
+                x.grad += Tensor([a_div_b_ddb(a, b) for a,b in zip(self.data, x.data)])
+            return Tensor(out, backward=back)
 
         if dims == (2,1):
             return Tensor([vec/x for vec in self.data])
