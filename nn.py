@@ -203,6 +203,20 @@ class Tensor:
     def __len__(self):
         return len(self.data)
         
+    def data_repr(self):
+        if self.dim == 0:
+            return f'({self.data})'
+        if self.dim == 1:
+            return self.data.__repr__()
+        if self.dim == 2:
+            repr = "["
+            for i, vec in enumerate(self.data):
+                if i != 0: repr += " "
+                repr += vec.data_repr()
+                if i != len(self.data)-1: repr += ",\n"
+            repr += "]"
+            return repr
+
     def __repr__(self):
         return f'Tensor(data={self.data.__repr__()})'
     
@@ -291,3 +305,11 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
+
+
+s = Tensor(4, requires_grad=True)
+m = Tensor([[1, 2], [3, 4]], requires_grad=True)
+v = Tensor([1, 2], requires_grad=True)
+print(s.data_repr())
+print(m.data_repr())
+print(v.data_repr())
