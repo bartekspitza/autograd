@@ -66,7 +66,7 @@ class Tensor:
             data = [a*b for a, b in zip(self.data, x.data)]
             def backward():
                 self.grad += x * out.grad
-                x.grad = self * out.grad
+                x.grad += self * out.grad
             out = Tensor(data, requires_grad=self.requires_grad, backward=backward)
             return out
 
@@ -149,20 +149,25 @@ class Tensor:
             if self.shape != x.shape:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
             
-            def a_div_b_dda(a, res): return res/a                # d/dx x/y
-            def a_div_b_ddb(a, b):   return -a * math.pow(b, -2) # d/dy x/y
-
             out = [a/b for a, b in zip(self.data, x.data)]
+
+            def a_div_b_ddb(a, b):   return -a * math.pow(b, -2) # d/dy x/y
             def back():
-                self.grad += Tensor([a_div_b_dda(a, b) for a,b in zip(self.data, out)])
+                self.grad += Tensor([1/a for a in x.data])
                 x.grad += Tensor([a_div_b_ddb(a, b) for a,b in zip(self.data, x.data)])
             return Tensor(out, backward=back)
 
         if dims == (2,1):
-            return Tensor([vec/x for vec in self.data])
+            out = [vec/x for vec in self.data]
+            def back(): 
+                for x in out: x.backward()
+            return Tensor(out, backward=back)
 
         if dims == (1,2):
-            return Tensor([self/vec for vec in x.data])
+            out = [self/vec for vec in x.data]
+            def back(): 
+                for x in out: x.backward()
+            return Tensor(out, backward=back)
         
     def __matmul__(self, other):
         dims = (self.dim, other.dim)
@@ -305,11 +310,3 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
-
-
-s = Tensor(4, requires_grad=True)
-m = Tensor([[1, 2], [3, 4]], requires_grad=True)
-v = Tensor([1, 2], requires_grad=True)
-print(s.data_repr())
-print(m.data_repr())
-print(v.data_repr())

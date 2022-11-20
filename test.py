@@ -345,16 +345,25 @@ class Testing(unittest.TestCase):
         x1 = nn.Tensor([2, 5, 5,   0.5], requires_grad=True)
         x2 = nn.Tensor([5, 2, 0.5, 5  ], requires_grad=True)
         c = x1/x2; c.grad=1; c.backward()
-        
-        self.assertAlmostEqual(0.2000, x1.grad[0], delta=0.0001)
-        self.assertAlmostEqual(-0.0800, x2.grad[0], delta=0.0001)
-        self.assertAlmostEqual(0.5000, x1.grad[1], delta=0.0001)
-        self.assertAlmostEqual(-1.2500, x2.grad[1], delta=0.0001)
-        self.assertAlmostEqual(2, x1.grad[2], delta=0.0001)
-        self.assertAlmostEqual(-20, x2.grad[2], delta=0.0001)
-        self.assertAlmostEqual(0.2, x1.grad[3], delta=0.0001)
-        self.assertAlmostEqual(-0.0200, x2.grad[3], delta=0.0001)
 
+        self.assertEqual([0.2, 0.5, 2.0, 0.2], x1.grad.tolist())
+        self.assertEqual([-0.08, -1.25, -20, -0.02], x2.grad.tolist())
+
+    def test_grad_div_mat_and_vec(self):
+        m = nn.Tensor([[5], [4]], requires_grad=True)
+        v = nn.Tensor([2], requires_grad=True)
+        c = m/v; c.grad=1; c.backward()
+
+        self.assertEqual([[0.5], [0.5]], m.grad.tolist())
+        self.assertEqual([-2.25], v.grad.tolist()) # also tests so that gradients are accumulated
+    
+    def test_grad_div_vec_and_mat(self):
+        m = nn.Tensor([[5], [4]], requires_grad=True)
+        v = nn.Tensor([2], requires_grad=True)
+        c = v/m; c.grad=1; c.backward()
+
+        self.assertEqual([[-0.08], [-0.125]], m.grad.tolist())
+        self.assertEqual([0.45], v.grad.tolist()) # also tests so that gradients are accumulated
 
     # Other stuff, subscript, getitem, setitem etc
     # ---------------------------------
