@@ -19,8 +19,6 @@ class Tensor:
         while isinstance(curr, (list, Tensor)) and len(curr) != 0:
             self.shape += (len(curr), )
             curr = curr[0]
-        if self.dim > 2: 
-            raise Exception("Dimensions over 2 not implemented")
 
         # For 2d tensors, convert the nested arrays to tensors
         if self.dim == 2 and self.shape[1] > 0 and isinstance(self.data[0], list):
@@ -364,19 +362,21 @@ def unwrap(tensor):
     
     return [unwrap(x) for x in tensor.data]
 
-def wrap(data, m=0):
+def wrap(data, shape=tuple()):
+    if isinstance(data, Tensor):
+        raise TypeError("Unexpected tensor")
+
     if isinstance(data, (int, float)):
-        return Tensor(data), m
+        return Tensor(data), shape
     elif isinstance(data, list):
         wrapped = []
+        prev_shape = None
         for x in data:
-            wr, dims = wrap(x, m=m+1)
-            wrapped.append(wr)
-
-        return Tensor(wrapped), dims
-
-
-v = [[1,2, 3], [4, 5, 6]]
-v1, dims = wrap(v)
-print(v)
-print(dims)
+            item, curr_shape = wrap(x, shape=shape)
+            if not prev_shape is None and curr_shape != prev_shape:
+                raise RuntimeError("found inconsistent vector sizes")
+            prev_shape = curr_shape
+            wrapped.append(item)
+        
+        shape += (len(wrapped), ) + prev_shape
+        return Tensor(wrapped), shape

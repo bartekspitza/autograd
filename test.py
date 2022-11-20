@@ -511,6 +511,40 @@ class Testing(unittest.TestCase):
         a = nn.ones((3, 5))
         self.assertEqual(3, len(a.data))
         self.assertEqual(5, len(a[0].data))
+    
+    def test_wrap_s(self):
+        s = 5
+        tensor, shape = nn.wrap(s)
+        self.assertEqual(type(tensor), nn.Tensor)
+        self.assertEqual(shape, ())
+    def test_wrap_v(self):
+        v = [1, 2, 3]
+        tensor, shape = nn.wrap(v)
+        self.assertEqual(type(tensor), nn.Tensor)
+        self.assertEqual(type(tensor[0]), nn.Tensor)
+        self.assertEqual(shape, (3,))
+    def test_wrap_m(self):
+        v = [1, 2, 3]
+        m = [v, v]
+        tensor, shape = nn.wrap(m)
+        self.assertEqual(type(tensor), nn.Tensor)
+        self.assertEqual(type(tensor[0]), nn.Tensor)
+        self.assertEqual(type(tensor[0][0]), nn.Tensor)
+        self.assertEqual(shape, (2,3))
+    def test_wrap_m3dim(self):
+        v = [1, 2, 3]
+        m = [v, v]
+        m3 = [m, m, m, m]
+        tensor, shape = nn.wrap(m3)
+        self.assertEqual(type(tensor), nn.Tensor)
+        self.assertEqual(type(tensor[0]), nn.Tensor)
+        self.assertEqual(type(tensor[0][0]), nn.Tensor)
+        self.assertEqual(type(tensor[0][0][0]), nn.Tensor)
+        self.assertEqual(shape, (4, 2, 3))
+    def test_wrap_m_throwsWhenDifferentSizesInSameDim(self):
+        v = [1, 2, 3]
+        m = [v, (v+[1])]
+        self.assertRaises(RuntimeError, lambda: nn.wrap(m))
 
 if __name__ == '__main__':
     unittest.main()
