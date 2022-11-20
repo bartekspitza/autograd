@@ -362,9 +362,11 @@ def unwrap(tensor):
     
     return [unwrap(x) for x in tensor.data]
 
+
 def wrap(data, shape=tuple()):
-    if isinstance(data, Tensor):
-        raise TypeError("Unexpected tensor")
+    """
+    Returns the wrapped data and the shape
+    """
 
     if isinstance(data, (int, float)):
         return Tensor(data), shape
@@ -380,3 +382,5 @@ def wrap(data, shape=tuple()):
         
         shape += (len(wrapped), ) + prev_shape
         return Tensor(wrapped), shape
+
+    raise TypeError(f"Unexpected type={type(data)}")

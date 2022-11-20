@@ -512,6 +512,25 @@ class Testing(unittest.TestCase):
         self.assertEqual(3, len(a.data))
         self.assertEqual(5, len(a[0].data))
     
+    ## unwrap
+    def test_unwrap_s(self):
+        s = nn.Tensor(5)
+        r = nn.unwrap(s)
+        self.assertEqual(type(r), int)
+    def test_unwrap_v(self):
+        v = nn.Tensor([nn.Tensor(2), nn.Tensor(5)])
+        r = nn.unwrap(v)
+        self.assertEqual(type(r), list)
+        self.assertEqual(type(r[0]), int)
+    def test_unwrap_m(self):
+        v = nn.Tensor([nn.Tensor(2), nn.Tensor(5)])
+        m = nn.Tensor([v, v, v]) 
+        r = nn.unwrap(m)
+        self.assertEqual(type(r), list)
+        self.assertEqual(type(r[0]), list)
+        self.assertEqual(type(r[0][0]), int)
+    
+    ## wrap
     def test_wrap_s(self):
         s = 5
         tensor, shape = nn.wrap(s)
