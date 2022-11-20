@@ -161,6 +161,11 @@ class Testing(unittest.TestCase):
         self.assertEqual([6, 2], c[0].data)
         self.assertEqual([8, 8], c[1].data)
 
+    def test_div_mat_and_mat(self):
+        m1 = nn.Tensor([[1, 2], [5, 4]])
+        m2 = nn.Tensor([[5, 4], [4, 16]])
+        self.assertEqual([[0.2, 0.5], [1.25, 0.25]], (m1/m2).tolist())
+
     def test_div_vector_with_2d(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
@@ -363,7 +368,15 @@ class Testing(unittest.TestCase):
         c = v/m; c.grad=1; c.backward()
 
         self.assertEqual([[-0.08], [-0.125]], m.grad.tolist())
-        self.assertEqual([0.45], v.grad.tolist()) # also tests so that gradients are accumulated
+        self.assertEqual([0.45], v.grad.tolist()) 
+    
+    def test_grad_div_mat_and_mat(self):
+        m1 = nn.Tensor([[2, 5], [5,   0.5]], requires_grad=True)
+        m2 = nn.Tensor([[5, 2,], [0.5, 5]], requires_grad=True)
+        c = m1/m2; c.grad=1; c.backward()
+
+        self.assertEqual([[0.2, 0.5], [2.0, 0.2]], m1.grad.tolist())
+        self.assertEqual([[-0.08, -1.25], [-20, -0.02]], m2.grad.tolist())
 
     # Other stuff, subscript, getitem, setitem etc
     # ---------------------------------

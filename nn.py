@@ -168,6 +168,12 @@ class Tensor:
             def back(): 
                 for x in out: x.backward()
             return Tensor(out, backward=back)
+
+        if dims == (2,2):
+            out = [a/b for a,b in zip(self.data, x.data)]
+            def back(): 
+                for x in out: x.backward()
+            return Tensor(out, backward=back)
         
     def __matmul__(self, other):
         dims = (self.dim, other.dim)
