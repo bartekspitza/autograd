@@ -136,6 +136,12 @@ class Testing(unittest.TestCase):
         c = v-m
         self.assertEqual([9, 18], c[0].data)
         self.assertEqual([7, 16], c[1].data)
+
+    def test_sub_mat_and_mat(self):
+        m = nn.Tensor([[1, 2], [3,4]])
+        m1 = nn.Tensor([[5, 10], [20, 30]])
+        self.assertEqual([[-4, -8], [-17, -26]], (m-m1).tolist())
+
     def test_sub_scalar(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
@@ -377,6 +383,30 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([[0.2, 0.5], [2.0, 0.2]], m1.grad.tolist())
         self.assertEqual([[-0.08, -1.25], [-20, -0.02]], m2.grad.tolist())
+    
+    ## Sub
+    def test_grad_sub_vec_and_vec(self):
+        x1 = nn.Tensor([-1, 0, 1], requires_grad=True)
+        x2 = nn.Tensor([-1, 0, 1], requires_grad=True)
+        c = x1-x2; c.grad=1; c.backward()
+
+        self.assertEqual([1, 1, 1], x1.grad.tolist())
+        self.assertEqual([-1, -1, -1], x2.grad.tolist())
+    
+    def test_grad_sub_mat_and_vec(self):
+        m = nn.Tensor([[5], [5]], requires_grad=True)
+        v = nn.Tensor([1], requires_grad=True)
+        c = m-v; c.grad=1; c.backward()
+        self.assertEqual([[1], [1]], m.grad.tolist())
+        self.assertEqual([-2], v.grad.tolist())
+
+    def test_grad_sub_mat_and_mat(self):
+        m = nn.Tensor([[5], [5]], requires_grad=True)
+        m1 = nn.Tensor([[5], [5]], requires_grad=True)
+        c = m-m1; c.grad=1; c.backward()
+        self.assertEqual([[1], [1]], m.grad.tolist())
+        self.assertEqual([[-1], [-1]], m1.grad.tolist())
+
 
     # Other stuff, subscript, getitem, setitem etc
     # ---------------------------------

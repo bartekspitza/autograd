@@ -83,7 +83,6 @@ class Tensor:
 
         if dims == (1,2): 
             return Tensor([self*v for v in x.data])
-
         if dims == (2,2): 
             return Tensor([a*b for a,b in zip(self.data, x.data)])
 
@@ -111,7 +110,6 @@ class Tensor:
 
         if dims == (1,2):
             return Tensor([self+v for v in x.data])
-        
         if dims == (2,2):
             return Tensor([a+b for a,b in zip(self.data, x.data)])
     
@@ -127,13 +125,20 @@ class Tensor:
         if dims == (1,1):
             if self.shape != x.shape:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
-            return Tensor([a-b for a, b in zip(self.data, x.data)])
+
+            data = [a-b for a, b in zip(self.data, x.data)]
+            def back():
+                self.grad += out.grad
+                x.grad -= out.grad
+            out = Tensor(data, requires_grad=self.requires_grad, backward=back)
+            return out
 
         if dims == (1,2):
             return Tensor([self-v for v in x.data])
-
         if dims == (2,1):
             return Tensor([v-x for v in self.data])
+        if dims == (2,2):
+            return Tensor([a-b for a,b in zip(self.data, x.data)])
     
     def __truediv__(self, x):
         if isinstance(x, (int, float)):
@@ -150,18 +155,16 @@ class Tensor:
             
             out = [a/b for a, b in zip(self.data, x.data)]
 
-            def a_div_b_ddb(a, b):   return -a * math.pow(b, -2) # d/dy x/y
             def back():
-                self.grad += Tensor([1/a for a in x.data])
-                x.grad += Tensor([a_div_b_ddb(a, b) for a,b in zip(self.data, x.data)])
-            return Tensor(out, backward=back)
+                self.grad += Tensor([1/a for a in x.data]) * out.grad
+                x.grad += Tensor([-a*math.pow(b, -2) for a,b in zip(self.data, x.data)]) * out.grad
+            out = Tensor(out, backward=back)
+            return out
 
         if dims == (2,1):
             return Tensor([vec/x for vec in self.data])
-
         if dims == (1,2):
             return Tensor([self/vec for vec in x.data])
-
         if dims == (2,2):
             return Tensor([a/b for a,b in zip(self.data, x.data)])
         
