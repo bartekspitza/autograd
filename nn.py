@@ -36,13 +36,15 @@ class Tensor:
             return Tensor([vec.grad for vec in self.data])
     
     def set_grad(self, x):
-        if x == 1:
+        if isinstance(x, (int, float)):
             if self.dim == 1:
-                self._grad = Tensor([1] * len(self))
+                self._grad = Tensor([x] * len(self))
             elif self.dim == 2:
                 for vec in self.data:
-                    vec.grad = 1
+                    vec.grad = x
         else:
+            if self.shape != x.shape:
+                raise RuntimeError(f"Cant set gradients of {x.shape=} to tensor of {self.shape=}")
             self._grad = x
     
     def get_backward(self):
@@ -101,10 +103,10 @@ class Tensor:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
 
             data = [a+b for a, b in zip(self.data, x.data)]
-            def backward():
-                self.grad = Tensor([1] * len(self)) * out.grad
-                x.grad = Tensor([1] * len(self)) * out.grad
-            out = Tensor(data, requires_grad=self.requires_grad, backward=backward)
+            def back():
+                self.grad += out.grad
+                x.grad += out.grad
+            out = Tensor(data, requires_grad=self.requires_grad, backward=back)
             return out
 
         if dims == (1,2):
