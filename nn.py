@@ -11,7 +11,7 @@ class Tensor:
         
         self.data = data
         self.requires_grad = requires_grad
-        self.backward = backward
+        self._backward = backward
 
         # Compute shape
         self.shape = ()
@@ -29,8 +29,6 @@ class Tensor:
         if self.requires_grad and self.dim == 1 and self.shape[0] > 0:
             self._grad = Tensor([0] * self.shape[0])
 
-    dim = property(lambda x: len(x.shape))
-
     def get_grad(self):
         if self.dim == 1:
             return self._grad
@@ -47,7 +45,18 @@ class Tensor:
         else:
             self._grad = x
     
+    def get_backward(self):
+        if self.dim == 2:
+            def back():
+                for v in self.data:
+                    v.backward()
+            return back
+
+        return self._backward
+    
+    dim = property(lambda x: len(x.shape))
     grad = property(get_grad, set_grad)
+    backward = property(get_backward)
     
     def __mul__(self, x):
         if isinstance(x, (int, float)):
@@ -71,16 +80,10 @@ class Tensor:
             return out
 
         if dims == (1,2): 
-            data = [self*v for v in x.data]
-            def back(): 
-                for v in data: v.backward()
-            return Tensor(data, backward=back)
+            return Tensor([self*v for v in x.data])
 
         if dims == (2,2): 
-            data = [a*b for a,b in zip(self.data, x.data)]
-            def back(): 
-                for v in data: v.backward()
-            return Tensor(data, backward=back)
+            return Tensor([a*b for a,b in zip(self.data, x.data)])
 
     def __add__(self, x):
         if isinstance(x, (int, float)):
@@ -105,16 +108,10 @@ class Tensor:
             return out
 
         if dims == (1,2):
-            data = [self+v for v in x.data]
-            def back(): 
-                for v in data: v.backward()
-            return Tensor(data, backward=back)
+            return Tensor([self+v for v in x.data])
         
         if dims == (2,2):
-            data = [a+b for a,b in zip(self.data, x.data)]
-            def back(): 
-                for v in data: v.backward()
-            return Tensor(data, backward=back)
+            return Tensor([a+b for a,b in zip(self.data, x.data)])
     
     def __sub__(self, x):
         if isinstance(x, (int, float)):
@@ -158,22 +155,13 @@ class Tensor:
             return Tensor(out, backward=back)
 
         if dims == (2,1):
-            out = [vec/x for vec in self.data]
-            def back(): 
-                for x in out: x.backward()
-            return Tensor(out, backward=back)
+            return Tensor([vec/x for vec in self.data])
 
         if dims == (1,2):
-            out = [self/vec for vec in x.data]
-            def back(): 
-                for x in out: x.backward()
-            return Tensor(out, backward=back)
+            return Tensor([self/vec for vec in x.data])
 
         if dims == (2,2):
-            out = [a/b for a,b in zip(self.data, x.data)]
-            def back(): 
-                for x in out: x.backward()
-            return Tensor(out, backward=back)
+            return Tensor([a/b for a,b in zip(self.data, x.data)])
         
     def __matmul__(self, other):
         dims = (self.dim, other.dim)
