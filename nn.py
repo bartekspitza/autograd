@@ -26,18 +26,25 @@ class Tensor:
         if self.dim == 2 and self.shape[1] > 0 and isinstance(self.data[0], list):
             self.data = [Tensor(vec, requires_grad=self.requires_grad) for vec in self.data]
         
-        if self.requires_grad and self.dim == 1 and self.shape[0] > 0:
+        if not self.requires_grad:
+            return
+
+        if self.dim == 0:
+            self._grad = Tensor(0)
+        if self.dim == 1 and self.shape[0] > 0:
             self._grad = Tensor([0] * self.shape[0])
 
     def get_grad(self):
-        if self.dim == 1:
+        if self.dim < 2:
             return self._grad
-        if self.dim == 2:
+        else:
             return Tensor([vec.grad for vec in self.data])
     
     def set_grad(self, x):
         if isinstance(x, (int, float)):
-            if self.dim == 1:
+            if self.dim == 0:
+                self._grad = Tensor(x)
+            elif self.dim == 1:
                 self._grad = Tensor([x] * len(self))
             elif self.dim == 2:
                 for vec in self.data:
@@ -62,13 +69,29 @@ class Tensor:
     
     def __mul__(self, x):
         if isinstance(x, (int, float)):
-            if self.dim == 1:
-                return Tensor([a*x for a in self.data])
-            if self.dim == 2:
-                return Tensor([vec*x for vec in self.data])
+            x = Tensor(x)
 
         dims = (self.dim, x.dim)
         if dims == (2,1): return x*self
+        if dims == (0,1): return x*self
+
+        if dims == (1,0):
+            prod = []
+            sum = 0
+            for a in self.data:
+                sum += a
+                prod.append(a*x.data)
+
+            def back():
+                self.grad += x*out.grad
+                print(out.grad)
+                print(sum)
+                x.grad += out.grad*sum
+
+            out = Tensor(prod, backward=back)
+            return out
+        if dims == (2,0):
+            return Tensor([vec*x for vec in self.data])
 
         if dims == (1,1):
             if self.shape != x.shape: 
@@ -168,29 +191,35 @@ class Tensor:
         if dims == (2,2):
             return Tensor([a/b for a,b in zip(self.data, x.data)])
         
-    def __matmul__(self, other):
-        dims = (self.dim, other.dim)
+    def __matmul__(self, x):
+        dims = (self.dim, x.dim)
         
         if dims == (1, 1):
-            if self.shape != other.shape:
-                raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
+            if self.shape != x.shape:
+                raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
 
             prod = 0
-            for a, b in zip(self.data, other.data): prod += a*b
-            return Tensor(prod)
+            for a, b in zip(self.data, x.data): prod += a*b
+            def back():
+                print(x.data)
+                print(out.grad)
+                self.grad += x.data * out.grad
+                self.grad += self.data * out.grad
+            out = Tensor(prod, backward=back)
+            return out
 
         if dims == (1, 2):
-            if self.shape[0] != other.shape[0]:
-                raise RuntimeError(f'Shape {self.shape} does not match {other.shape}')
+            if self.shape[0] != x.shape[0]:
+                raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
             
-            data = Tensor([0] * other.shape[1])
-            for i,x in enumerate(self.data):
-                intermediate = Tensor([x*w for w in other.data[i]])
+            data = Tensor([0] * x.shape[1])
+            for i,vec in enumerate(self.data):
+                intermediate = Tensor([vec*w for w in x.data[i]])
                 data = data + intermediate
             return data
 
         if dims == (2,1) or dims == (2,2):
-            return Tensor([(v@other).data for v in self.data])
+            return Tensor([(v@x).data for v in self.data])
     
     def log(self):
         if self.dim == 1:

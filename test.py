@@ -63,6 +63,11 @@ class Testing(unittest.TestCase):
         m = nn.Tensor([[12, 8], [16, 32]])
         self.assertEqual([12, 16], (v*2).data)
         self.assertEqual([[24, 16], [32, 64]], (m*2).tolist())
+    def test_mult_scalar_tensor(self):
+        v = nn.Tensor([6, 8])
+        m = nn.Tensor([[12, 8], [16, 32]])
+        self.assertEqual([12, 16], (v*nn.Tensor(2)).data)
+        self.assertEqual([[24, 16], [32, 64]], (m*nn.Tensor(2)).tolist())
     
     # Add
     def test_add_vector_with_vector(self):
@@ -351,6 +356,17 @@ class Testing(unittest.TestCase):
         self.assertEqual([[5, 6], [7, 8]], a.grad.tolist())
         self.assertEqual([[1, 2], [3, 4]], b.grad.tolist())
     
+    def test_grad_mult_vec_scalar(self):
+        a = nn.Tensor([1,2, 3], requires_grad=True)
+        b = nn.Tensor(5, requires_grad=True)
+        print('asdfasdfasdf')
+        c = a*b; 
+        c.grad=1; 
+        #c.backward()
+
+        #self.assertEqual([5, 5, 5], a.grad.tolist())
+        #self.assertEqual([6], b.grad.tolist())
+    
     # Div
     def test_grad_div_vec_and_vec(self):
         x1 = nn.Tensor([2, 5, 5,   0.5], requires_grad=True)
@@ -413,6 +429,17 @@ class Testing(unittest.TestCase):
         c = m-m1; c.grad=1; c.backward()
         self.assertEqual([[1], [1]], m.grad.tolist())
         self.assertEqual([[-1], [-1]], m1.grad.tolist())
+    
+    ## Dot
+    def test_grad_dot_vec_and_vec(self):
+        x1 = nn.Tensor([2, 3, 4], requires_grad=True)
+        x2 = nn.Tensor([5, 6, 7], requires_grad=True)
+        print("backward")
+        print("here")
+        #c = x1@x2; c.grad=1; c.backward()
+
+        #self.assertEqual([1, 1, 1], x1.grad.tolist())
+        #self.assertEqual([-1, -1, -1], x2.grad.tolist())
 
 
     # Other stuff, subscript, getitem, setitem etc
