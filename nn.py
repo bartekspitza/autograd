@@ -66,14 +66,60 @@ class Tensor:
     dim = property(lambda x: len(x.shape))
     grad = property(get_grad, set_grad)
     backward = property(get_backward)
+
+    def __add__(self, x):
+        if isinstance(x, (int, float)):
+            x = Tensor(x)
+
+        if self.dim < x.dim: return x+self
+
+        dims = (self.dim, x.dim)
+
+        if dims == (0,0):
+            data = self.data+x.data
+            def back():
+                self.grad += out.grad
+                x.grad += out.grad
+            out = Tensor(data, requires_grad=self.requires_grad, backward=back)
+            return out
+
+        if dims == (1,0):
+            return Tensor([a+x.data for a in self.data])
+        if dims == (2,0):
+            data = [vec+x for vec in self.data]
+            return Tensor(data)
+
+        if dims == (1,1): 
+            if self.shape != x.shape:
+                raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
+
+            data = [a+b for a, b in zip(self.data, x.data)]
+            def back():
+                self.grad += out.grad
+                x.grad += out.grad
+            out = Tensor(data, requires_grad=self.requires_grad, backward=back)
+            return out
+
+        if dims == (2,1):
+            return Tensor([v+x for v in self.data])
+        if dims == (2,2):
+            return Tensor([a+b for a,b in zip(self.data, x.data)])
     
     def __mul__(self, x):
         if isinstance(x, (int, float)):
             x = Tensor(x)
 
+        if self.dim < x.dim: return x*self
+
         dims = (self.dim, x.dim)
-        if dims == (1,2): return x*self
-        if dims == (0,1): return x*self
+
+        if dims == (0,0): 
+            data = self.data*x.data
+            def back():
+                self.grad += x*out.grad
+                x.grad += self*out.grad
+            out = Tensor(data, requires_grad=self.requires_grad, backward=back)
+            return out
 
         if dims == (1,0):
             prod = []
@@ -106,37 +152,6 @@ class Tensor:
             return Tensor([x*v for v in self.data])
         if dims == (2,2): 
             return Tensor([a*b for a,b in zip(self.data, x.data)])
-
-    def __add__(self, x):
-        if isinstance(x, (int, float)):
-            x = Tensor(x)
-
-        dims = (self.dim, x.dim)
-        if dims == (1,2): return x+self
-        if dims == (0,1): return x+self
-        if dims == (0,2): return x+self
-
-        if dims == (1,0):
-            return Tensor([a+x.data for a in self.data])
-        if dims == (2,0):
-            data = [vec+x for vec in self.data]
-            return Tensor(data)
-
-        if dims == (1,1): 
-            if self.shape != x.shape:
-                raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
-
-            data = [a+b for a, b in zip(self.data, x.data)]
-            def back():
-                self.grad += out.grad
-                x.grad += out.grad
-            out = Tensor(data, requires_grad=self.requires_grad, backward=back)
-            return out
-
-        if dims == (2,1):
-            return Tensor([v+x for v in self.data])
-        if dims == (2,2):
-            return Tensor([a+b for a,b in zip(self.data, x.data)])
     
     def __sub__(self, x):
         if isinstance(x, (int, float)):

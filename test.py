@@ -69,6 +69,14 @@ class Testing(unittest.TestCase):
         s = nn.Tensor(2)
         self.assertEqual([12, 16], (v*s).data)
         self.assertEqual([[24, 16], [32, 64]], (m*s).tolist())
+    def test_mult_ss(self):
+        s1 = nn.Tensor(2, requires_grad=True)
+        s2 = nn.Tensor(5, requires_grad=True)
+        r = s1*s2
+        self.assertEqual(10, r.data)
+
+        r.grad=1; r.backward()
+        self.assertEqual([5, 2], [s1.grad.data, s2.grad.data])
     
     # Add
     def test_add_vector_with_vector(self):
@@ -118,6 +126,14 @@ class Testing(unittest.TestCase):
         s = nn.Tensor(2)
         self.assertEqual([8, 10], (v+s).data)
         self.assertEqual([[14, 10], [18, 34]], (m+s).tolist())
+    def test_add_ss(self):
+        s1 = nn.Tensor(2, requires_grad=True)
+        s2 = nn.Tensor(5, requires_grad=True)
+        r = s1+s2
+        self.assertEqual(7, r.data)
+
+        r.grad=1; r.backward()
+        self.assertEqual([1, 1], [s1.grad.data, s2.grad.data])
 
     # Sub
     def test_sub_vector_with_vector(self):
