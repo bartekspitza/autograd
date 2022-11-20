@@ -359,24 +359,27 @@ def unwrap(tensor):
         raise TypeError("Must be Tensor")
     
     if tensor.dim == 0: return tensor.data
-    
     return [unwrap(x) for x in tensor.data]
 
 
-def wrap(data, shape=tuple()):
+def wrap(data):
     """
     Returns the wrapped data and the shape
     """
 
+    shape = ()
     if isinstance(data, (int, float)):
-        return Tensor(data), shape
+        return Tensor(data), tuple()
+
     elif isinstance(data, list):
         wrapped = []
         prev_shape = None
+
         for x in data:
-            item, curr_shape = wrap(x, shape=shape)
+            item, curr_shape = wrap(x)
             if not prev_shape is None and curr_shape != prev_shape:
                 raise RuntimeError("found inconsistent vector sizes")
+            
             prev_shape = curr_shape
             wrapped.append(item)
         
