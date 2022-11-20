@@ -249,6 +249,8 @@ class Tensor:
             return Tensor([v.exp() for v in self.data])
     
     def __len__(self):
+        if self.dim == 0:
+            return 0
         return len(self.data)
         
     def data_repr(self):
@@ -353,3 +355,11 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
+
+def unwrap(tensor):
+    if not isinstance(tensor, Tensor):
+        raise TypeError("Must be Tensor")
+    
+    if tensor.dim == 0: return tensor.data
+    
+    return [unwrap(x) for x in tensor.data]
