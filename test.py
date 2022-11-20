@@ -399,6 +399,13 @@ class Testing(unittest.TestCase):
         c = m-v; c.grad=1; c.backward()
         self.assertEqual([[1], [1]], m.grad.tolist())
         self.assertEqual([-2], v.grad.tolist())
+    
+    def test_grad_sub_vec_and_mat(self):
+        m = nn.Tensor([[5, 5], [5, 5]], requires_grad=True)
+        v = nn.Tensor([1, 1], requires_grad=True)
+        c = v-m; c.grad=1; c.backward()
+        self.assertEqual([[-1, -1], [-1, -1]], m.grad.tolist())
+        self.assertEqual([2, 2], v.grad.tolist())
 
     def test_grad_sub_mat_and_mat(self):
         m = nn.Tensor([[5], [5]], requires_grad=True)
