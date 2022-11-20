@@ -66,8 +66,9 @@ class Testing(unittest.TestCase):
     def test_mult_scalar_tensor(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
-        self.assertEqual([12, 16], (v*nn.Tensor(2)).data)
-        self.assertEqual([[24, 16], [32, 64]], (m*nn.Tensor(2)).tolist())
+        s = nn.Tensor(2)
+        self.assertEqual([12, 16], (v*s).data)
+        self.assertEqual([[24, 16], [32, 64]], (m*s).tolist())
     
     # Add
     def test_add_vector_with_vector(self):
@@ -100,16 +101,22 @@ class Testing(unittest.TestCase):
 
     def test_add_vector_with_2dmatrix(self):
         a = nn.Tensor([[1, 2], [3, 4]])
-        b = nn.Tensor([10, 20])
+        b = nn.Tensor([10, -20])
         c = b+a
-        self.assertEqual([11, 22], c[0].data)
-        self.assertEqual([13, 24], c[1].data)
+        self.assertEqual([[11, -18], [13, -16]], c.tolist())
 
     def test_add_scalar(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
         self.assertEqual([8, 10], (v+2).data)
         self.assertEqual([[14, 10], [18, 34]], (m+2).tolist())
+    
+    def test_add_scalar_tensor(self):
+        v = nn.Tensor([6, 8])
+        m = nn.Tensor([[12, 8], [16, 32]])
+        s = nn.Tensor(2)
+        self.assertEqual([8, 10], (v+s).data)
+        self.assertEqual([[14, 10], [18, 34]], (m+s).tolist())
 
     # Sub
     def test_sub_vector_with_vector(self):
