@@ -77,16 +77,14 @@ class Tensor:
 
         if dims == (1,0):
             prod = []
-            sum = 0
+            summ = 0
             for a in self.data:
-                sum += a
+                summ += a
                 prod.append(a*x.data)
 
             def back():
                 self.grad += x*out.grad
-                print(out.grad)
-                print(sum)
-                x.grad += out.grad*sum
+                x.grad += sum(out.grad*summ)
 
             out = Tensor(prod, backward=back)
             return out
@@ -205,8 +203,6 @@ class Tensor:
             prod = 0
             for a, b in zip(self.data, x.data): prod += a*b
             def back():
-                print(x.data)
-                print(out.grad)
                 self.grad += x.data * out.grad
                 self.grad += self.data * out.grad
             out = Tensor(prod, backward=back)

@@ -20,7 +20,6 @@ class Testing(unittest.TestCase):
         self.assertEqual(nn.Tensor, t[0].__class__)
     
 
-
     # Test operations
     # ---------------------------------
 
@@ -61,8 +60,9 @@ class Testing(unittest.TestCase):
     def test_mult_scalar(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
-        self.assertEqual([12, 16], (v*2).data)
-        self.assertEqual([[24, 16], [32, 64]], (m*2).tolist())
+        s = 2
+        self.assertEqual([12, 16], (v*s).data)
+        self.assertEqual([[24, 16], [32, 64]], (m*s).tolist())
     def test_mult_scalar_tensor(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
@@ -108,8 +108,9 @@ class Testing(unittest.TestCase):
     def test_add_scalar(self):
         v = nn.Tensor([6, 8])
         m = nn.Tensor([[12, 8], [16, 32]])
-        self.assertEqual([8, 10], (v+2).data)
-        self.assertEqual([[14, 10], [18, 34]], (m+2).tolist())
+        s = 2
+        self.assertEqual([8, 10], (v+s).data)
+        self.assertEqual([[14, 10], [18, 34]], (m+s).tolist())
     
     def test_add_scalar_tensor(self):
         v = nn.Tensor([6, 8])
@@ -365,10 +366,10 @@ class Testing(unittest.TestCase):
     
     def test_grad_mult_vec_scalar(self):
         a = nn.Tensor([1,2, 3], requires_grad=True)
-        b = nn.Tensor(5, requires_grad=True)
-        print('asdfasdfasdf')
-        c = a*b; 
-        c.grad=1; 
+        #b = nn.Tensor(5, requires_grad=True)
+        #print('asdfasdfasdf')
+        #c = a*b; 
+        #c.grad=1; 
         #c.backward()
 
         #self.assertEqual([5, 5, 5], a.grad.tolist())
@@ -441,8 +442,6 @@ class Testing(unittest.TestCase):
     def test_grad_dot_vec_and_vec(self):
         x1 = nn.Tensor([2, 3, 4], requires_grad=True)
         x2 = nn.Tensor([5, 6, 7], requires_grad=True)
-        print("backward")
-        print("here")
         #c = x1@x2; c.grad=1; c.backward()
 
         #self.assertEqual([1, 1, 1], x1.grad.tolist())
