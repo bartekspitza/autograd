@@ -363,3 +363,20 @@ def unwrap(tensor):
     if tensor.dim == 0: return tensor.data
     
     return [unwrap(x) for x in tensor.data]
+
+def wrap(data, m=0):
+    if isinstance(data, (int, float)):
+        return Tensor(data), m
+    elif isinstance(data, list):
+        wrapped = []
+        for x in data:
+            wr, dims = wrap(x, m=m+1)
+            wrapped.append(wr)
+
+        return Tensor(wrapped), dims
+
+
+v = [[1,2, 3], [4, 5, 6]]
+v1, dims = wrap(v)
+print(v)
+print(dims)
