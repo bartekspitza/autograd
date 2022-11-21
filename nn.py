@@ -3,9 +3,8 @@ import math
 import random
 
 class Tensor:
+
     def __init__(self, data, requires_grad=False, backward=None):
-        if isinstance(data, Tensor):
-            data = data.data
         if not isinstance(data, (list, int, float)):
             raise TypeError("Cant init with type " + type(data))
         
@@ -13,16 +12,14 @@ class Tensor:
         self.requires_grad = requires_grad
         self._backward = backward
 
-        # Compute shape
-        self.shape = ()
-        curr = data
-        while isinstance(curr, (list, Tensor)) and len(curr) != 0:
-            self.shape += (len(curr), )
-            curr = curr[0]
-
-        # For 2d tensors, convert the nested arrays to tensors
-        if self.dim == 2 and self.shape[1] > 0 and isinstance(self.data[0], list):
-            self.data = [Tensor(vec, requires_grad=self.requires_grad) for vec in self.data]
+        if isinstance(data, list):
+            self.shape = (len(data),)
+            if self.shape != (0,): 
+                if not isinstance(data[0], Tensor):
+                    raise TypeError("Found nested non-tensor item")
+                self.shape += data[0].shape
+        else:
+            self.shape = ()
         
         if not self.requires_grad:
             return
@@ -82,7 +79,7 @@ class Tensor:
             return out
 
         if dims == (1,0):
-            return Tensor([a+x.data for a in self.data])
+            return Tensor([a+x for a in self.data])
         if dims == (2,0):
             data = [vec+x for vec in self.data]
             return Tensor(data)
@@ -124,7 +121,7 @@ class Tensor:
             summ = 0
             for a in self.data:
                 summ += a
-                prod.append(a*x.data)
+                prod.append(a*x)
 
             def back():
                 self.grad += x*out.grad
@@ -153,12 +150,14 @@ class Tensor:
     
     def __sub__(self, x):
         if isinstance(x, (int, float)):
-            if self.dim == 1:
-                return Tensor([a-x for a in self.data])
-            if self.dim == 2:
-                return Tensor([vec-x for vec in self.data])
+            x = Tensor(x)
         
         dims = (self.dim, x.dim)
+        if dims == (0, 0): return Tensor(self.data-x.data)
+        if dims == (1, 0): return Tensor([a-x for a in self.data])
+        if dims == (0, 1): return Tensor([self-a for a in x.data])
+        if dims == (2, 0): return Tensor([a-x for a in self.data])
+        if dims == (0, 2): return Tensor([self-a for a in x.data])
 
         if dims == (1,1):
             if self.shape != x.shape:
@@ -180,12 +179,14 @@ class Tensor:
     
     def __truediv__(self, x):
         if isinstance(x, (int, float)):
-            if self.dim == 1:
-                return Tensor([a/x for a in self.data])
-            if self.dim == 2:
-                return Tensor([vec/x for vec in self.data])
+            x = Tensor(x)
         
         dims = (self.dim, x.dim)
+        if dims == (0, 0): return Tensor(self.data/x.data)
+        if dims == (1, 0): return Tensor([a/x for a in self.data])
+        if dims == (0, 1): return Tensor([self/a for a in x.data])
+        if dims == (2, 0): return Tensor([a/x for a in self.data])
+        if dims == (0, 2): return Tensor([self/a for a in x.data])
 
         if dims == (1,1):
             if self.shape != x.shape:
@@ -213,26 +214,33 @@ class Tensor:
             if self.shape != x.shape:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
 
-            prod = 0
-            for a, b in zip(self.data, x.data): prod += a*b
+            out = 0
+            for a,b in zip(self.data, x.data): out += a*b
+
             def back():
                 self.grad += x.data * out.grad
                 self.grad += self.data * out.grad
-            out = Tensor(prod, backward=back)
+            out._backward = back
             return out
 
         if dims == (1, 2):
             if self.shape[0] != x.shape[0]:
                 raise RuntimeError(f'Shape {self.shape} does not match {x.shape}')
             
-            data = Tensor([0] * x.shape[1])
+            data = zeros((x.shape[1],))
             for i,vec in enumerate(self.data):
                 intermediate = Tensor([vec*w for w in x.data[i]])
                 data = data + intermediate
             return data
 
         if dims == (2,1) or dims == (2,2):
-            return Tensor([(v@x).data for v in self.data])
+            return Tensor([(v@x) for v in self.data])
+    
+    def __radd__(self, x):
+        return self+x
+
+    def __rmult__(self, x):
+        return self*x
     
     def log(self):
         if self.dim == 1:
@@ -283,11 +291,9 @@ class Tensor:
 
         raise RuntimeError("Not implemented")
 
-    def tolist(self):
-        if self.dim == 1:
-            return self.data
-        if self.dim == 2:
-            return [t.data for t in self.data]
+    def unwrap(self):
+        if self.dim == 0: return self.data
+        return [x.unwrap() for x in self.data]
 
 def tanh(tensor):
     if tensor.dim == 1:
@@ -311,6 +317,23 @@ def ones(shape):
         for _ in range(shape[0]):
             data.append([1] * shape[1])
         return Tensor(data)
+
+def zeros(shape):
+    if not isinstance(shape, tuple):
+        raise TypeError("Expected tuple")
+
+    dim = len(shape)
+    if dim == 0 or dim > 2:
+        raise RuntimeError("Invalid size")
+
+    if dim == 1:
+        data = [0] * shape[0]
+        return wrap(data)
+    if dim == 2:
+        data = []
+        for _ in range(shape[0]):
+            data.append([1] * shape[1])
+        return wrap(data)
 
 def randn(shape):
     if not isinstance(shape, tuple):
@@ -354,36 +377,25 @@ def multinomial(input, num_samples, replacement=True, indices=None):
     
     return out
 
-def unwrap(tensor):
-    if not isinstance(tensor, Tensor):
-        raise TypeError("Must be Tensor")
-    
-    if tensor.dim == 0: return tensor.data
-    return [unwrap(x) for x in tensor.data]
+
 
 
 def wrap(data):
-    """
-    Returns the wrapped data and the shape
-    """
-
-    shape = ()
     if isinstance(data, (int, float)):
-        return Tensor(data), tuple()
+        return Tensor(data)
 
     elif isinstance(data, list):
         wrapped = []
         prev_shape = None
 
         for x in data:
-            item, curr_shape = wrap(x)
-            if not prev_shape is None and curr_shape != prev_shape:
+            item = wrap(x)
+            if not prev_shape is None and item.shape != prev_shape:
                 raise RuntimeError("found inconsistent vector sizes")
             
-            prev_shape = curr_shape
+            prev_shape = item.shape
             wrapped.append(item)
         
-        shape += (len(wrapped), ) + prev_shape
-        return Tensor(wrapped), shape
+        return Tensor(wrapped)
 
     raise TypeError(f"Unexpected type={type(data)}")
