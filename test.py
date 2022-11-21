@@ -501,6 +501,35 @@ class Testing(unittest.TestCase):
         m = nn.wrap([[1,2], [3,4]])
         m[0] = nn.wrap([10, 20])
         self.assertEqual([10, 20], m[0].unwrap())
+    
+    def test_iadd_ss(self):
+        a, s = nn.Tensor(0), nn.Tensor(3)
+        id1 = id(a)
+
+        a += s
+        self.assertEqual(3, a.unwrap())
+        self.assertEqual(id(a), id1)
+
+        id1 = id(a)
+        a += 5
+        self.assertEqual(8, a.unwrap())
+        self.assertEqual(id(a), id1)
+    def test_iadd_sv(self):
+        v1 = nn.wrap([0,1,2])
+        s = nn.Tensor(3)
+        id1 = id(v1)
+
+        v1 += s
+        self.assertEqual([3,4,5], v1.unwrap())
+        self.assertEqual(id(v1), id1)
+
+    def test_iadd_vv(self):
+        v1, v2 = nn.wrap([0,1,2]), nn.wrap([1,1,1])
+        id1 = id(v1)
+
+        v1 += v2
+        self.assertEqual([1,2,3], v1.unwrap())
+        self.assertEqual(id(v1), id1)
 
     # Other functions
     # ---------------------------------

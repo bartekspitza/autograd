@@ -3,7 +3,6 @@ import math
 import random
 
 class Tensor:
-
     def __init__(self, data, requires_grad=False, backward=None):
         if not isinstance(data, (list, int, float)):
             raise TypeError("Cant init with type " + type(data))
@@ -216,7 +215,6 @@ class Tensor:
 
             out = 0
             for a,b in zip(self.data, x.data): out += a*b
-
             def back():
                 self.grad += x.data * out.grad
                 self.grad += self.data * out.grad
@@ -241,6 +239,15 @@ class Tensor:
 
     def __rmult__(self, x):
         return self*x
+
+    def __iadd__(self, x):
+        if self.dim == 0:
+            self.data = (self+x).data
+            return self
+        if self.dim == 1:
+            self.data = (self+x).data
+            return self
+
     
     def log(self):
         if self.dim == 0:
