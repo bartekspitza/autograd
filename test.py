@@ -260,9 +260,12 @@ class Testing(unittest.TestCase):
         c = x@m
         self.assertEqual([28, 40], c[0].unwrap())
         self.assertEqual([47, 62], c[1].unwrap())
-    """
     
     # exp(x)
+    def test_exp_s(self):
+        s = nn.Tensor(0)
+        self.assertAlmostEqual(1.0, s.exp().unwrap())
+
     def test_exp_v(self):
         v = nn.wrap([-1, 0, 1, 2])
         res = v.exp()
@@ -275,7 +278,12 @@ class Testing(unittest.TestCase):
         res = m.exp().unwrap()
         self.assertEqual([[1, math.e], [math.e, 1]], res)
 
+
     # log(x)
+    def test_log_s(self):
+        s = nn.Tensor(1)
+        self.assertEqual(0, s.log().unwrap())
+
     def test_log_v(self):
         v = nn.wrap([-1, 0, 1, 0.3678])
         res = v.log()
@@ -287,10 +295,14 @@ class Testing(unittest.TestCase):
         res = m.log().unwrap()
         self.assertEqual([[0, 1], [1, 0]], res)
     
-    # exp(x)
+    # tanh(x)
+    def test_tanh_s(self):
+        s = nn.Tensor(0)
+        self.assertAlmostEqual(0, nn.tanh(s).unwrap())
+    
     def test_tanh_v(self):
         v = nn.wrap([-1, 0, 1])
-        res = nn.tanh(v)
+        res = nn.tanh(v).unwrap()
         self.assertAlmostEqual(-0.7616, res[0], delta=0.00001)
         self.assertAlmostEqual(0, res[1])
         self.assertAlmostEqual(0.7616, res[2], delta=0.00001)
@@ -298,10 +310,11 @@ class Testing(unittest.TestCase):
     def test_tanh_m(self):
         v = nn.wrap([[-1, 0, 1]])
         res = nn.tanh(v)
-        res = res[0]
+        res = res.unwrap()[0]
         self.assertAlmostEqual(-0.7616, res[0], delta=0.00001)
         self.assertAlmostEqual(0, res[1])
         self.assertAlmostEqual(0.7616, res[2], delta=0.00001)
+    """
 
     # Backprop
     # ---------------------------------
@@ -456,14 +469,15 @@ class Testing(unittest.TestCase):
 
         #self.assertEqual([1, 1, 1], x1.grad.unwrap())
         #self.assertEqual([-1, -1, -1], x2.grad.unwrap())
+    """
 
 
     # Other stuff, subscript, getitem, setitem etc
     # ---------------------------------
     def test_getitem_vector(self):
         m = nn.wrap([1,2])
-        self.assertEqual(1, m[0])
-        self.assertEqual(2, m[1])
+        self.assertEqual(1, m[0].unwrap())
+        self.assertEqual(2, m[1].unwrap())
 
     def test_getitem_matrix(self):
         m = nn.wrap([[1,2], [3,4]])
@@ -490,41 +504,38 @@ class Testing(unittest.TestCase):
 
     # Other functions
     # ---------------------------------
-    def test_sum_vector(self):
+    def test_sum_v(self):
         t = nn.wrap([1, 2, 3])
-        self.assertEqual(6, nn.sum(t))
+        self.assertEqual(6, nn.sum(t).unwrap())
 
-    def test_sum_matrix(self):
-        t = nn.wrap([[1, 2, 3], [7, 3]])
+    def test_sum_m(self):
+        t = nn.wrap([[1,2], [3,4]])
         c = nn.sum(t)
-        self.assertEqual([6, 10], c.unwrap())
+        self.assertEqual(10, c.unwrap())
     
     def test_ones(self):
-        a = nn.ones((3,))
-        self.assertEqual([1, 1, 1], a.unwrap())
-        a = nn.ones((3, 5))
-        self.assertEqual(3, len(a.unwrap()))
-        self.assertEqual(5, len(a[0].unwrap()))
+        a = nn.ones((3,)).unwrap()
+
+        self.assertEqual([1, 1, 1], a)
+        a = nn.ones((3, 5)).unwrap()
+        self.assertEqual(3, len(a))
+        self.assertEqual(5, len(a[0]))
     
     ## unwrap
     def test_unwrap_s(self):
         s = nn.Tensor(5)
-        r = nn.unwrap(s)
+        r = s.unwrap()
         self.assertEqual(type(r), int)
+        self.assertEqual(5, r)
     def test_unwrap_v(self):
-        v = nn.tensor([nn.tensor(2), nn.tensor(5)])
-        r = nn.unwrap(v)
+        v = nn.Tensor([nn.Tensor(2), nn.Tensor(5)])
+        r = v.unwrap()
         self.assertEqual(type(r), list)
-        print('asfdasdf')
-        print(v.shape)
-        print(v)
-        print(v[0])
-        print(type(r[0]))
         self.assertEqual(type(r[0]), int)
     def test_unwrap_m(self):
         v = nn.Tensor([nn.Tensor(2), nn.Tensor(5)])
         m = nn.Tensor([v, v, v]) 
-        r = nn.unwrap(m)
+        r = m.unwrap()
         self.assertEqual(type(r), list)
         self.assertEqual(type(r[0]), list)
         self.assertEqual(type(r[0][0]), int)
@@ -569,7 +580,6 @@ class Testing(unittest.TestCase):
         m3 = [m, m, m, m]
         tensor= nn.wrap(m3)
         self.assertEqual((2,3), tensor[0].shape)
-    """
 
 
 if __name__ == '__main__':

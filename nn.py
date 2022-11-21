@@ -243,14 +243,18 @@ class Tensor:
         return self*x
     
     def log(self):
+        if self.dim == 0:
+            return Tensor(math.log(self.data) if self.data > 0 else math.nan)
         if self.dim == 1:
-            return Tensor([math.log(x) if x > 0 else math.nan for x in self.data])
+            return Tensor([x.log() for x in self.data])
         if self.dim == 2:
             return Tensor([v.log() for v in self.data])
     
     def exp(self):
+        if self.dim == 0:
+            return Tensor(math.exp(self.data))
         if self.dim == 1:
-            return Tensor([math.exp(x) for x in self.data])
+            return Tensor([x.exp() for x in self.data])
         if self.dim == 2:
             return Tensor([v.exp() for v in self.data])
     
@@ -296,12 +300,14 @@ class Tensor:
         return [x.unwrap() for x in self.data]
 
 def tanh(tensor):
+    if tensor.dim == 0:
+        return Tensor(math.tanh(tensor.data))
     if tensor.dim == 1:
-        return Tensor([math.tanh(x) for x in tensor.data])
+        return Tensor([tanh(x) for x in tensor.data])
     if tensor.dim == 2:
         return Tensor([tanh(t) for t in tensor.data])
 
-def ones(shape):
+def tensor_of_number(shape, num):
     if not isinstance(shape, tuple):
         raise TypeError("Expected tuple")
 
@@ -310,30 +316,16 @@ def ones(shape):
         raise RuntimeError("Invalid size")
 
     if dim == 1:
-        data = [1] * shape[0]
-        return Tensor(data)
+        return wrap([num] * shape[0])
     if dim == 2:
-        data = []
-        for _ in range(shape[0]):
-            data.append([1] * shape[1])
-        return Tensor(data)
+        data = [([num] * shape[1]) for _ in range(shape[0])]
+        return wrap(data)
+
+def ones(shape):
+    return tensor_of_number(shape, 1)
 
 def zeros(shape):
-    if not isinstance(shape, tuple):
-        raise TypeError("Expected tuple")
-
-    dim = len(shape)
-    if dim == 0 or dim > 2:
-        raise RuntimeError("Invalid size")
-
-    if dim == 1:
-        data = [0] * shape[0]
-        return wrap(data)
-    if dim == 2:
-        data = []
-        for _ in range(shape[0]):
-            data.append([1] * shape[1])
-        return wrap(data)
+    return tensor_of_number(shape, 0)
 
 def randn(shape):
     if not isinstance(shape, tuple):
@@ -357,8 +349,10 @@ def sum(tensor):
     if tensor.dim == 1:
         return builtins.sum(tensor.data)
     if tensor.dim == 2:
-        data = [sum(t) for t in tensor.data]
-        return Tensor(data)
+        sm = 0
+        for v in tensor.data:
+            sm += sum(v)
+        return Tensor(sm.data)
 
 def multinomial(input, num_samples, replacement=True, indices=None):
     if input.dim != 2:
@@ -376,9 +370,6 @@ def multinomial(input, num_samples, replacement=True, indices=None):
             indices.append(x)
     
     return out
-
-
-
 
 def wrap(data):
     if isinstance(data, (int, float)):
