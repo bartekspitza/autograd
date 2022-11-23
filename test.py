@@ -17,6 +17,10 @@ class Testing(unittest.TestCase):
         a = nn.Tensor([3,3])
         self.assertEqual((2,), a.shape)
 
+    def test_getitem(self):
+        a = nn.Tensor([3,4])
+        self.assertEqual(3, a[0].data)
+
 
     ## Ops
     def test_add(self):
