@@ -54,8 +54,11 @@ class Tensor:
             out.data = self.data@x
         return out
     
-    def __getitem__(self, indx):
-        return Tensor(self.data[indx])
+    def __rmul__(self, x):
+        return self*x
+    
+    def __getitem__(self, *args):
+        return Tensor(self.data.__getitem__(*args))
     
     def tanh(self):
         return Tensor(np.tanh(self.data))
@@ -74,4 +77,10 @@ class Tensor:
 
     def tolist(self):
         return self.data.tolist()
+    
+    def __repr__(self):
+        repr = self.data.__repr__()
+        if "array" in repr:
+            repr = "tensor" + repr[5:]
+        return repr
     
