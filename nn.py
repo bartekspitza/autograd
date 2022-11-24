@@ -2,6 +2,8 @@ import numpy as np
 
 class Tensor:
     def __init__(self, data, requires_grad=False, backward=None):
+        if data is None:
+            raise Exception("data none")
         if isinstance(data, list):
             data = np.array(data, dtype=float)
         if isinstance(data, (int, float)):
@@ -10,48 +12,40 @@ class Tensor:
         self.data = data
         self.requires_grad = requires_grad
         self.backward = backward
+
+        if not requires_grad: return
+        self.grad = np.zeros(self.data.shape)
     
     dim = property(lambda x: x.data.ndim)
     shape = property(lambda x: x.data.shape)
 
     def __add__(self, x):
-        out = Tensor(None, requires_grad=self.requires_grad, backward=self.backward)
-        if isinstance(x, Tensor): 
-            out.data = self.data+x.data
-        else: 
-            out.data = self.data+x
-        return out
+        data = x.data if isinstance(x, Tensor) else x
+        return Tensor(self.data+data, requires_grad=self.requires_grad, backward=self.backward)
     
     def __mul__(self, x):
-        out = Tensor(None, requires_grad=self.requires_grad, backward=self.backward)
-        if isinstance(x, Tensor): 
-            out.data = self.data*x.data
-        else: 
-            out.data = self.data*x
-        return out
+        data = x.data if isinstance(x, Tensor) else x
+        return Tensor(self.data*data, requires_grad=self.requires_grad, backward=self.backward)
+    
 
     def __sub__(self, x):
-        out = Tensor(None, requires_grad=self.requires_grad, backward=self.backward)
-        if isinstance(x, Tensor): 
-            out.data = self.data-x.data
-        else: 
-            out.data = self.data-x
-        return out
+        data = x.data if isinstance(x, Tensor) else x
+        return Tensor(self.data-data, requires_grad=self.requires_grad, backward=self.backward)
 
     def __truediv__(self, x):
-        out = Tensor(None, requires_grad=self.requires_grad, backward=self.backward)
-        if isinstance(x, Tensor): 
-            out.data = self.data/x.data
-        else: 
-            out.data = self.data/x
-        return out
+        data = x.data if isinstance(x, Tensor) else x
+        return Tensor(self.data/data, requires_grad=self.requires_grad, backward=self.backward)
 
     def __matmul__(self, x):
-        out = Tensor(None, requires_grad=self.requires_grad, backward=self.backward)
-        if isinstance(x, Tensor): 
-            out.data = self.data@x.data
-        else: 
-            out.data = self.data@x
+        data = x.data if isinstance(x, Tensor) else x
+
+        out_d = self.data@data
+        def back():
+            dims = (self.dim, data.ndim)
+            if dims == (1,2):
+                self.grad += data.sum(axis=1)
+                x.grad += (self.data.reshape((-1, 1)) * np.ones(x.shape))
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
         return out
     
     def __rmul__(self, x):
