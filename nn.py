@@ -1,5 +1,8 @@
 import numpy as np
 
+# Readability,S=Scalar, V=Vector, M=Matrix, e.g. SS means scalar to scalar
+SS,VV,MM,SV,SM,VS,MS,VM,MV = (0,0),(1,1),(2,2),(0,1),(0,2),(1,0),(2,0),(1,2),(2,1)
+
 class Tensor:
     def __init__(self, data, requires_grad=False, backward=None):
         if data is None:
@@ -30,38 +33,40 @@ class Tensor:
     dim = property(lambda x: x.data.ndim)
     shape = property(lambda x: x.data.shape)
 
+    ## Convienence method to get a tuple of two tensors' dims
+    def _dims(self, x):
+        if not isinstance(x, np.ndarray):
+            raise TypeError("Expected ndarray")
+        return ((self.dim if self.shape != (1,) else 0), (x.ndim if x.shape != (1,) else 0))
+
     def __add__(self, x):
-        data = x.data if isinstance(x, Tensor) else x
-        out_d = self.data+data
+        x_data = x.data if isinstance(x, Tensor) else x
 
         def back():
-            self_dim = self.dim if self.shape != (1,) else 0
-            x_dim = data.ndim if data.shape != (1,) else 0
-            dims = (self_dim, x_dim)
+            dims = self._dims(x_data)
 
-            if dims in [(0,1), (0,2)]:
+            if dims in [SS, VV, MM]:
+                self.grad += out.grad
+                x.grad += out.grad
+            if dims in [SV, SM]:
                 self.grad += np.sum(out.grad)
                 x.grad += out.grad
-            if dims in [(1,0), (2,0)]:
+            if dims in [VS, MS]:
                 self.grad += out.grad
                 x.grad += np.sum(out.grad)
-            if dims in [(0,0), (1,1), (2,2)]:
-                self.grad += out.grad
-                x.grad += out.grad
-            if dims in [(1,2)]:
+            if dims == VM:
                 self.grad += np.sum(out.grad, axis=0)
                 x.grad += out.grad
-            if dims in [(2,1)]:
+            if dims == MV:
                 self.grad += out.grad
                 x.grad += np.sum(out.grad, axis=0)
 
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        out = Tensor(self.data+x_data, requires_grad=self.requires_grad, backward=back)
         return out
     
     def __mul__(self, x):
         data = x.data if isinstance(x, Tensor) else x
         return Tensor(self.data*data, requires_grad=self.requires_grad, backward=self.backward)
-    
 
     def __sub__(self, x):
         data = x.data if isinstance(x, Tensor) else x

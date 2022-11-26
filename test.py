@@ -105,6 +105,7 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([2, 4], a.grad.tolist())
         self.assertEqual([[1,2], [1,2]], b.grad.tolist())
+
     def test_grad_add_mv(self):
         a = nn.Tensor([1,2], requires_grad=True)
         b = nn.Tensor([[1,1], [1,1]], requires_grad=True)
@@ -114,6 +115,7 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([2, 4], a.grad.tolist())
         self.assertEqual([[1,2], [1,2]], b.grad.tolist())
+
     def test_grad_add_mm(self):
         b = nn.Tensor([[1,1], [1,1]], requires_grad=True)
         r = b+b
