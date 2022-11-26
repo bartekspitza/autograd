@@ -1,5 +1,6 @@
-A complete Neural Network library written from scratch with **no use of external libraries**.
+# Autograd engine
 
-# Why?
+Backpropagation implementation. This is hidden in all modern deep learning libraries behind one single method call: `backward()`, where the magic happens. I want to un-magic that magic.
 
-Besides the obvious fact that it's cool and will make me feel good; Building the computation graph that is necessary for backprop seems fun. This aspect is completely hidden when working with libraries, making the `backward()` call "magical".
+## Thoughts
+Originally I implemented all vector and matrix arithmetics from scratch, but then realised it was simply too slow when dealing with large ("large") datasets such as mnist. So bye ~60 commits, and `import numpy as np`.
