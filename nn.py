@@ -65,8 +65,29 @@ class Tensor:
         return out
     
     def __mul__(self, x):
-        data = x.data if isinstance(x, Tensor) else x
-        return Tensor(self.data*data, requires_grad=self.requires_grad, backward=self.backward)
+        x_data = x.data if isinstance(x, Tensor) else x
+
+        def back(): 
+            dims = self._dims(x_data)
+
+            if dims in [SS, VV, MM]:
+                self.grad += x_data * out.grad
+                x.grad += self.data * out.grad
+            if dims in [SV, SM]:
+                self.grad += (x_data * out.grad).sum()
+                x.grad += self.data * out.grad
+            if dims in [VS, MS]:
+                self.grad += x_data * out.grad
+                x.grad += (self.data * out.grad).sum()
+            if dims == VM:
+                self.grad += (x_data * out.grad).sum(axis=0)
+                x.grad += self.data * out.grad
+            if dims == MV:
+                self.grad += x_data * out.grad
+                x.grad += (self.data * out.grad).sum(axis=0)
+
+        out = Tensor(self.data*x_data, requires_grad=self.requires_grad, backward=back)
+        return out
 
     def __sub__(self, x):
         data = x.data if isinstance(x, Tensor) else x

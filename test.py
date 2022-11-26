@@ -123,6 +123,96 @@ class Testing(unittest.TestCase):
         r.backward()
 
         self.assertEqual([[2,4], [6,8]], b.grad.tolist())
+    
+    # Mult
+    def test_grad_mult_ss(self):
+        s1 = nn.Tensor(5, requires_grad=True)
+        s2 = nn.Tensor(3, requires_grad=True)
+        r = s1*s2
+        r.grad=4 
+        r.backward()
+
+        self.assertEqual(12, s1.grad.item())
+        self.assertEqual(20, s2.grad.item())
+
+    def test_grad_mult_sv(self):
+        s = nn.Tensor(5, requires_grad=True)
+        v = nn.Tensor([3,4], requires_grad=True)
+        r = s*v
+        r.grad=4 
+        r.backward()
+
+        self.assertEqual(12+16, s.grad.item())
+        self.assertEqual([20,20], v.grad.tolist())
+
+    def test_grad_mult_vs(self):
+        s = nn.Tensor(5, requires_grad=True)
+        v = nn.Tensor([3,4], requires_grad=True)
+        r = v*s
+        r.grad=4 
+        r.backward()
+
+        self.assertEqual(28, s.grad.item())
+        self.assertEqual([20,20], v.grad.tolist())
+    
+    def test_grad_mult_sm(self):
+        s = nn.Tensor(5, requires_grad=True)
+        m = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        r = s*m
+        r.grad=np.array([[3,4], [1, 2]]) 
+        r.backward()
+
+        self.assertEqual(22, s.grad.item())
+        self.assertEqual([[15, 20], [5, 10]], m.grad.tolist())
+    def test_grad_mult_ms(self):
+        s = nn.Tensor(5, requires_grad=True)
+        m = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        r = m*s
+        r.grad=np.array([[3,4], [1, 2]]) 
+        r.backward()
+
+        self.assertEqual(22, s.grad.item())
+        self.assertEqual([[15, 20], [5, 10]], m.grad.tolist())
+
+    def test_grad_mult_vv(self):
+        v1 = nn.Tensor([1,2], requires_grad=True)
+        v2 = nn.Tensor([3,4], requires_grad=True)
+        r = v1*v2
+        r.grad=np.array([3,4], dtype=float); 
+        r.backward()
+
+        self.assertEqual([9, 16], v1.grad.tolist())
+        self.assertEqual([3, 8], v2.grad.tolist())
+    
+    def test_grad_mult_vm(self):
+        v = nn.Tensor([1,2], requires_grad=True)
+        m = nn.Tensor([[2,1], [3,4]], requires_grad=True)
+        r = v*m
+        r.grad=np.array([[4,3], [2,1]], dtype=float); 
+        r.backward()
+
+        self.assertEqual([14, 7], v.grad.tolist())
+        self.assertEqual([[4, 6], [2, 2]], m.grad.tolist())
+
+    def test_grad_mult_mv(self):
+        v = nn.Tensor([1,2], requires_grad=True)
+        m = nn.Tensor([[2,1], [3,4]], requires_grad=True)
+        r = m*v
+        r.grad=np.array([[4,3], [2,1]], dtype=float); 
+        r.backward()
+
+        self.assertEqual([14, 7], v.grad.tolist())
+        self.assertEqual([[4, 6], [2, 2]], m.grad.tolist())
+
+    def test_grad_mult_mm(self):
+        m1 = nn.Tensor([[1,2],[3,4]], requires_grad=True)
+        m2 = nn.Tensor([[5,6],[7,8]], requires_grad=True)
+        r = m1*m2
+        r.grad=np.array([[3,4],[1,2]], dtype=float); 
+        r.backward()
+
+        self.assertEqual([[15, 24], [7, 16]], m1.grad.tolist())
+        self.assertEqual([[3, 8], [3, 8]], m2.grad.tolist())
 
     # matmul
     def test_grad_matmul_vm(self):
