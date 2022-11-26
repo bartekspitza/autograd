@@ -14,14 +14,31 @@ class Tensor:
         self.backward = backward
 
         if not requires_grad: return
-        self.grad = np.zeros(self.data.shape)
+        self._grad = np.zeros(self.data.shape)
     
+
+    def set_grad(self, x):
+        if isinstance(x, (int, float)):
+            self._grad = np.full(self.shape, x, dtype=float)
+    def get_grad(self):
+        return self._grad 
+    
+    grad = property(get_grad, set_grad)
     dim = property(lambda x: x.data.ndim)
     shape = property(lambda x: x.data.shape)
 
     def __add__(self, x):
         data = x.data if isinstance(x, Tensor) else x
-        return Tensor(self.data+data, requires_grad=self.requires_grad, backward=self.backward)
+        out_d = self.data+data
+
+        def back():
+            dims = (self.dim, data.ndim)
+            if dims == (0,0):
+                self.grad += out.grad
+                x.grad += out.grad
+
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        return out
     
     def __mul__(self, x):
         data = x.data if isinstance(x, Tensor) else x
