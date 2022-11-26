@@ -1,7 +1,6 @@
 import unittest
-import nn
 import numpy as np
-import math
+from src import nn
 
 class Testing(unittest.TestCase):
 
