@@ -98,16 +98,27 @@ class Tensor:
         return Tensor(self.data/data, requires_grad=self.requires_grad, backward=self.backward)
 
     def __matmul__(self, x):
-        data = x.data if isinstance(x, Tensor) else x
+        x_data = x.data if isinstance(x, Tensor) else x
 
-        out_d = self.data@data
         def back():
-            dims = (self.dim, data.ndim)
-            if dims == (1,2):
-                self.grad += data.sum(axis=1)
-                x.grad += (self.data.reshape((-1, 1)) * np.ones(x.shape))
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+            dims = self._dims(x_data)
+
+            if dims in [VV]:
+                self.grad += x_data * out.grad
+                x.grad += self.data * out.grad
+            if dims in [MV]:
+                out_g_rs = out.grad.reshape(-1,1) * np.ones((self.shape)) # e.g. turns [3, 4] -> [[3, 3], [4, 4]]
+                self.grad += x_data * out_g_rs
+                x.grad += (self.data * out_g_rs).sum(axis=0)
+            if dims in [VM]:
+                out_g_rs = np.tile(out.grad, (len(x_data), 1))              # e.g. turns [3, 4] -> [[3, 4], [3, 4]]
+                out_g_rs_T = out.grad.reshape(-1,1) * np.ones((self.shape)) # e.g. turns [3, 4] -> [[3, 3], [4, 4]]
+                self.grad += (x_data.T * out_g_rs_T).sum(axis=0)
+                x.grad += self.data.reshape(-1,1) * out_g_rs
+
+        out = Tensor(self.data@x_data, requires_grad=self.requires_grad, backward=back)
         return out
+
     
     def __rmul__(self, x):
         return self*x
