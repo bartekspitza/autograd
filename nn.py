@@ -20,6 +20,9 @@ class Tensor:
     def set_grad(self, x):
         if isinstance(x, (int, float)):
             self._grad = np.full(self.shape, x, dtype=float)
+        else:
+            self._grad = x
+
     def get_grad(self):
         return self._grad 
     
@@ -32,10 +35,25 @@ class Tensor:
         out_d = self.data+data
 
         def back():
-            dims = (self.dim, data.ndim)
-            if dims == (0,0):
+            self_dim = self.dim if self.shape != (1,) else 0
+            x_dim = data.ndim if data.shape != (1,) else 0
+            dims = (self_dim, x_dim)
+
+            if dims in [(0,1), (0,2)]:
+                self.grad += np.sum(out.grad)
+                x.grad += out.grad
+            if dims in [(1,0), (2,0)]:
+                self.grad += out.grad
+                x.grad += np.sum(out.grad)
+            if dims in [(0,0), (1,1), (2,2)]:
                 self.grad += out.grad
                 x.grad += out.grad
+            if dims in [(1,2)]:
+                self.grad += np.sum(out.grad, axis=0)
+                x.grad += out.grad
+            if dims in [(2,1)]:
+                self.grad += out.grad
+                x.grad += np.sum(out.grad, axis=0)
 
         out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
         return out
