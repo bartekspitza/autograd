@@ -212,8 +212,97 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([[15, 24], [7, 16]], m1.grad.tolist())
         self.assertEqual([[3, 8], [3, 8]], m2.grad.tolist())
+    
+    # sub
+    def test_grad_sub_ss(self):
+        s1 = nn.Tensor(5, requires_grad=True)
+        s2 = nn.Tensor(3, requires_grad=True)
+        r = s1-s2; r.grad=5; r.backward()
 
-    # matmul
+        self.assertEqual(5, s1.grad.item())
+        self.assertEqual(-5, s2.grad.item())
+
+    def test_grad_sub_sv(self):
+        s = nn.Tensor(5, requires_grad=True)
+        v = nn.Tensor([1,2], requires_grad=True)
+        r = s-v 
+        r.grad=np.array([3,4])
+        r.backward()
+
+        self.assertEqual(7, s.grad.item())
+        self.assertEqual([-3,-4], v.grad.tolist())
+
+    def test_grad_sub_vs(self):
+        s = nn.Tensor(5, requires_grad=True)
+        v = nn.Tensor([1,2], requires_grad=True)
+        r = v-s
+        r.grad=np.array([3,4])
+        r.backward()
+
+        self.assertEqual(-7, s.grad.item())
+        self.assertEqual([3,4], v.grad.tolist())
+
+    def test_grad_sub_sm(self):
+        s = nn.Tensor(5, requires_grad=True)
+        m = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        r = s-m
+        r.grad=np.array([[1,2], [3,4]])
+        r.backward()
+
+        self.assertEqual(10, s.grad.item())
+        self.assertEqual([[-1, -2], [-3, -4]], m.grad.tolist())
+
+    def test_grad_sub_ms(self):
+        s = nn.Tensor(5, requires_grad=True)
+        m = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        r = m-s
+        r.grad=np.array([[1,2], [3,4]])
+        r.backward()
+
+        self.assertEqual(-10, s.grad.item())
+        self.assertEqual([[1, 2], [3, 4]], m.grad.tolist())
+
+    def test_grad_sub_vv(self):
+        v1 = nn.Tensor([1,3,5], requires_grad=True)
+        v2 = nn.Tensor([1,3,5], requires_grad=True)
+        r=v1-v2
+        r.grad = np.array([3,2,1])
+        r.backward()
+
+        self.assertEqual([3,2,1], v1.grad.tolist())
+        self.assertEqual([-3,-2,-1], v2.grad.tolist())
+    
+    def test_grad_sub_vm(self):
+        v = nn.Tensor([1,3], requires_grad=True)
+        m = nn.Tensor([[1,2], [1,2]], requires_grad=True)
+        r=v-m
+        r.grad = np.array([[1,2],[3,4]])
+        r.backward()
+
+        self.assertEqual([4,6], v.grad.tolist())
+        self.assertEqual([[-1,-2],[-3,-4]], m.grad.tolist())
+
+    def test_grad_sub_mv(self):
+        v = nn.Tensor([1,3], requires_grad=True)
+        m = nn.Tensor([[1,2], [1,2]], requires_grad=True)
+        r=m-v
+        r.grad = np.array([[1,2],[3,4]])
+        r.backward()
+
+        self.assertEqual([-4,-6], v.grad.tolist())
+        self.assertEqual([[1,2],[3,4]], m.grad.tolist())
+
+    def test_grad_sub_mm(self):
+        m1 = nn.Tensor([[1,2], [1,2]], requires_grad=True)
+        m2 = nn.Tensor([[1,2], [1,2]], requires_grad=True)
+        r=m1-m2
+        r.grad = np.array([[1,2], [3,4]])
+        r.backward()
+
+        self.assertEqual([[1,2], [3,4]], m1.grad.tolist())
+        self.assertEqual([[-1,-2], [-3,-4]], m2.grad.tolist())
+
+    # Matmul
     def test_grad_matmul_vv(self):
         v1 = nn.Tensor([1,2], requires_grad=True)
         v2 = nn.Tensor([3,4], requires_grad=True)
