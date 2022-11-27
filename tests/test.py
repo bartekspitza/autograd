@@ -237,7 +237,7 @@ class Testing(unittest.TestCase):
         self.assertEqual([18, 19], v.grad.tolist())
         self.assertEqual([[3,6], [4, 8]], m.grad.tolist())
 
-    def test_grad_matmul_mv(self):
+    def test_grad_matmul_vm(self):
         v = nn.Tensor([1,2], requires_grad=True)
         m = nn.Tensor([[2,1], [3, 4]], requires_grad=True)
 
@@ -252,15 +252,30 @@ class Testing(unittest.TestCase):
         self.assertEqual([10, 25], v.grad.tolist())
         self.assertEqual([[3,4], [6,8]], m.grad.tolist())
         
-    """
-    def test_grad_matmul_vm(self):
-        m = nn.Tensor([[6,4,2], [1,2,3]], requires_grad=True)
-        v = nn.Tensor([1, 2], requires_grad=True)
-        r = v@m; r.backward()
+    def test_grad_matmul_mm(self):
+        m1 = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        m2 = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        r = m1@m2
 
-        self.assertEqual([12, 6], v.grad.tolist())
-        self.assertEqual([[1,1,1], [2,2,2]], m.grad.tolist())
-    """
+        r.grad = np.array([[1,2],[3,4]])
+        r.backward()
+
+        self.assertEqual([[5, 11],[11,25]], m1.grad.tolist())
+        self.assertEqual([[10,14],[14,20]], m2.grad.tolist())
+
+
+        """
+        m1 = nn.Tensor([[1,2]], requires_grad=True)
+        m2 = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        r = m1@m2
+
+        r.grad = np.array([[1,2]])
+        r.backward()
+
+        self.assertEqual([[5, 11]], m1.grad.tolist())
+        self.assertEqual([[1,2],[2,4]], m2.grad.tolist())
+        """
+
     
     ## Backprop chaining
     """

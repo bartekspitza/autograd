@@ -103,18 +103,25 @@ class Tensor:
         def back():
             dims = self._dims(x_data)
 
-            if dims in [VV]:
+            if dims == VV:
                 self.grad += x_data * out.grad
                 x.grad += self.data * out.grad
-            if dims in [MV]:
+            if dims == MV:
                 out_g_rs = out.grad.reshape(-1,1) * np.ones((self.shape)) # e.g. turns [3, 4] -> [[3, 3], [4, 4]]
                 self.grad += x_data * out_g_rs
                 x.grad += (self.data * out_g_rs).sum(axis=0)
-            if dims in [VM]:
+            if dims == VM:
                 out_g_rs = np.tile(out.grad, (len(x_data), 1))              # e.g. turns [3, 4] -> [[3, 4], [3, 4]]
                 out_g_rs_T = out.grad.reshape(-1,1) * np.ones((self.shape)) # e.g. turns [3, 4] -> [[3, 3], [4, 4]]
                 self.grad += (x_data.T * out_g_rs_T).sum(axis=0)
                 x.grad += self.data.reshape(-1,1) * out_g_rs
+            if dims == MM:
+                # left matrix has shape (k,m)
+                # right matrix has shape (m, n)
+                k,m,n = len(self.data), x_data.shape[0], x_data.shape[1]
+                grads = out.grad.repeat(m, axis=0).reshape((k,m,n))
+                self.grad += (x_data*grads).sum(axis=2)
+                x.grad += (self.data.reshape((k,m,1))*grads).sum(axis=0)
 
         out = Tensor(self.data@x_data, requires_grad=self.requires_grad, backward=back)
         return out
