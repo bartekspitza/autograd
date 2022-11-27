@@ -226,10 +226,6 @@ class Testing(unittest.TestCase):
         v = nn.Tensor([1,2], requires_grad=True)
         m = nn.Tensor([[2,1], [3, 4]], requires_grad=True)
 
-        # 1. [2, 2], G=[3,3]
-        # 2. [3, 8], G=[4,4]
-        # 3. [1.sum, 2.sum], G=[3,4]
-
         r = m@v
         r.grad=np.array([3, 4])
         r.backward()
@@ -241,10 +237,6 @@ class Testing(unittest.TestCase):
         v = nn.Tensor([1,2], requires_grad=True)
         m = nn.Tensor([[2,1], [3, 4]], requires_grad=True)
 
-        # 1. [2, 2], G=[3,3]
-        # 2. [3, 8], G=[4,4]
-        # 3. [1.sum, 2.sum], G=[3,4]
-
         r = v@m
         r.grad=np.array([3, 4], dtype=float)
         r.backward()
@@ -253,18 +245,18 @@ class Testing(unittest.TestCase):
         self.assertEqual([[3,4], [6,8]], m.grad.tolist())
         
     def test_grad_matmul_mm(self):
-        m1 = nn.Tensor([[1,2], [3,4]], requires_grad=True)
-        m2 = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        m1 = nn.Tensor([[1,2,3], [3,4,5]], requires_grad=True)
+        m2 = nn.Tensor([[1,2,3,4], [3,4,5,6], [6,7,8,9]], requires_grad=True)
         r = m1@m2
 
-        r.grad = np.array([[1,2],[3,4]])
+        r.grad = np.array([[1,2,3,4],[5,6,7,8]])
         r.backward()
 
-        self.assertEqual([[5, 11],[11,25]], m1.grad.tolist())
-        self.assertEqual([[10,14],[14,20]], m2.grad.tolist())
-
+        self.assertEqual([[30,50,80],[70,122,200]], m1.grad.tolist())
+        self.assertEqual([[16,20,24,28], [22,28,34,40], [28,36,44,52]], m2.grad.tolist())
 
         """
+        Keeping this simpler case around if I ever need to debug this..
         m1 = nn.Tensor([[1,2]], requires_grad=True)
         m2 = nn.Tensor([[1,2], [3,4]], requires_grad=True)
         r = m1@m2
@@ -275,7 +267,6 @@ class Testing(unittest.TestCase):
         self.assertEqual([[5, 11]], m1.grad.tolist())
         self.assertEqual([[1,2],[2,4]], m2.grad.tolist())
         """
-
     
     ## Backprop chaining
     """
