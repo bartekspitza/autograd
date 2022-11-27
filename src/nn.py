@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 # Readability,S=Scalar, V=Vector, M=Matrix, e.g. SS means scalar to scalar
 SS,VV,MM,SV,SM,VS,MS,VM,MV = (0,0),(1,1),(2,2),(0,1),(0,2),(1,0),(2,0),(1,2),(2,1)
@@ -114,8 +115,20 @@ class Tensor:
         return out
 
     def __truediv__(self, x):
-        data = x.data if isinstance(x, Tensor) else x
-        return Tensor(self.data/data, requires_grad=self.requires_grad, backward=self.backward)
+        x_data = x.data if isinstance(x, Tensor) else x
+
+        out_d = self.data/x_data
+        def back():
+            dims = self._dims(x_data)
+
+            def denom_d():return -self.data * np.power(x_data, -2) # d/dx y/x = -yx^-2
+
+            if dims in [SS, VV, MM]:
+                self.grad += (np.ones(self.shape) / x_data) * out.grad
+                x.grad += denom_d() * out.grad
+
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        return out
 
     def __matmul__(self, x):
         x_data = x.data if isinstance(x, Tensor) else x

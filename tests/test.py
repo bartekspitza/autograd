@@ -301,6 +301,35 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([[1,2], [3,4]], m1.grad.tolist())
         self.assertEqual([[-1,-2], [-3,-4]], m2.grad.tolist())
+    
+    # Div
+    def test_grad_div_ss(self):
+        s1 = nn.Tensor(4, requires_grad=True)
+        s2 = nn.Tensor(2, requires_grad=True)
+        r=s1/s2;r.grad=3;r.backward()
+
+        self.assertEqual(1.5, s1.grad.item())
+        self.assertEqual(-3, s2.grad.item())
+    
+    def test_grad_div_vv(self):
+        v1 = nn.Tensor([1,2], requires_grad=True)
+        v2 = nn.Tensor([4,4], requires_grad=True)
+        r=v1/v2
+        r.grad=np.array([1,2])
+        r.backward()
+
+        self.assertEqual([0.25, 0.5], v1.grad.tolist())
+        self.assertEqual([-0.0625, -0.25], v2.grad.tolist())
+
+    def test_grad_div_mm(self):
+        m1 = nn.Tensor([[1,2], [2,1]], requires_grad=True)
+        m2 = nn.Tensor([[2,4], [8,10]], requires_grad=True)
+        r=m1/m2
+        r.grad=np.array([[1,2], [3,4]])
+        r.backward()
+
+        self.assertEqual([[.5, .5], [.375, .4]], m1.grad.tolist())
+        self.assertEqual([[-.25, -.25], [-.09375, -.04]], m2.grad.tolist())
 
     # Matmul
     def test_grad_matmul_vv(self):
