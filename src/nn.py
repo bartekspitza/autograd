@@ -174,7 +174,12 @@ class Tensor:
         return Tensor(self.data.__getitem__(*args))
     
     def tanh(self):
-        return Tensor(np.tanh(self.data))
+        out_d = np.tanh(self.data)
+        def back():
+            self.grad += (1 - np.power(out_d, 2)) * out.grad
+
+        out = Tensor(np.tanh(self.data), requires_grad=self.requires_grad, backward=back)
+        return out
     
     def sum(self, **kwargs):
         return Tensor(self.data.sum(**kwargs))

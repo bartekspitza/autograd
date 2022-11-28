@@ -442,6 +442,30 @@ class Testing(unittest.TestCase):
         self.assertEqual([[1,2],[2,4]], m2.grad.tolist())
         """
     
+    # Tanh
+    def test_grad_tanh_s(self):
+        s = nn.Tensor(0.6, requires_grad=True)
+        r = s.tanh(); r.grad = 2; 
+        r.backward()
+        self.assertEqualUpTo4Decimals([1.4232], s.grad)
+
+    def test_grad_tanh_v(self):
+        v = nn.Tensor([0.6, 0.6], requires_grad=True)
+        r = v.tanh(); r.grad = np.array([1, 2]); r.backward()
+        self.assertEqualUpTo4Decimals([.7116, 1.4232], v.grad)
+
+    def test_grad_tanh_m(self):
+        m = nn.Tensor([[.6, .6], [.6, .6]], requires_grad=True)
+        r = m.tanh()
+        r.grad = np.array([[1,2], [3,4]])
+        r.backward()
+        self.assertEqualUpTo4Decimals([[.7116, 1.4232], [2.1347, 2.8463]], m.grad)
+
+    def assertEqualUpTo4Decimals(self, expected, actual):
+        actual = np.round(actual * np.array(10000)) / 10000
+        self.assertEqual(expected, actual.tolist())
+
+    
     ## Backprop chaining
     """
     def test_add_sv(self):
