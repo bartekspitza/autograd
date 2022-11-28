@@ -188,7 +188,10 @@ class Tensor:
         return Tensor(self.data.reshape(*args))
 
     def exp(self):
-        return Tensor(np.exp(self.data))
+        out_d = np.exp(self.data)
+        def back(): self.grad += out_d * out.grad
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        return out
 
     def log(self):
         return Tensor(np.log(self.data))
