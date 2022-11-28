@@ -124,8 +124,20 @@ class Tensor:
             def denom_d():return -self.data * np.power(x_data, -2) # d/dx y/x = -yx^-2
 
             if dims in [SS, VV, MM]:
-                self.grad += (np.ones(self.shape) / x_data) * out.grad
+                self.grad += out.grad/x_data
                 x.grad += denom_d() * out.grad
+            if dims in [SV, SM]:
+                self.grad += (out.grad/x_data).sum()
+                x.grad += denom_d() * out.grad
+            if dims in [VS, MS]:
+                self.grad += out.grad/x_data
+                x.grad += (denom_d() * out.grad).sum()
+            if dims == VM:
+                self.grad += (out.grad/x_data).sum(axis=0)
+                x.grad += denom_d() * out.grad
+            if dims == MV:
+                self.grad += out.grad/x_data
+                x.grad += (denom_d() * out.grad).sum(axis=0)
 
         out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
         return out

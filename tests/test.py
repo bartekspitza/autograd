@@ -310,6 +310,42 @@ class Testing(unittest.TestCase):
 
         self.assertEqual(1.5, s1.grad.item())
         self.assertEqual(-3, s2.grad.item())
+
+    def test_grad_div_sv(self):
+        s = nn.Tensor(4, requires_grad=True)
+        v = nn.Tensor([4,4], requires_grad=True)
+        r=s/v;r.grad=[1,2];r.backward()
+
+        self.assertEqual(0.75, s.grad.item())
+        self.assertEqual([-.25, -.5], v.grad.tolist())
+
+    def test_grad_div_vs(self):
+        s = nn.Tensor(4, requires_grad=True)
+        v = nn.Tensor([4,4], requires_grad=True)
+        r=v/s;r.grad=[1,2];r.backward()
+
+        self.assertEqual(-0.75, s.grad.item())
+        self.assertEqual([.25, 0.5], v.grad.tolist())
+    
+    def test_grad_div_sm(self):
+        s = nn.Tensor(4, requires_grad=True)
+        m = nn.Tensor([[2,4], [8,16]], requires_grad=True)
+        r=s/m
+        r.grad=np.array([[1,2],[3,4]])
+        r.backward()
+
+        self.assertEqual(1.625, s.grad.item())
+        self.assertEqual([[-1,-.5], [-.1875, -.0625]], m.grad.tolist())
+
+    def test_grad_div_ms(self):
+        s = nn.Tensor(4, requires_grad=True)
+        m = nn.Tensor([[2,4], [8,16]], requires_grad=True)
+        r=m/s
+        r.grad=np.array([[1,2],[3,4]])
+        r.backward()
+
+        self.assertEqual(-6.125, s.grad.item())
+        self.assertEqual([[.25, .5], [.75, 1]], m.grad.tolist())
     
     def test_grad_div_vv(self):
         v1 = nn.Tensor([1,2], requires_grad=True)
@@ -320,6 +356,26 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([0.25, 0.5], v1.grad.tolist())
         self.assertEqual([-0.0625, -0.25], v2.grad.tolist())
+    
+    def test_grad_div_vm(self):
+        v = nn.Tensor([1,2], requires_grad=True)
+        m = nn.Tensor([[2,4], [8,16]], requires_grad=True)
+        r=v/m
+        r.grad=np.array([[2,1],[4,8]])
+        r.backward()
+
+        self.assertEqual([1.5, .75], v.grad.tolist())
+        self.assertEqual([[-.5, -.125], [-.0625, -.0625]], m.grad.tolist())
+
+    def test_grad_div_mv(self):
+        v = nn.Tensor([1,2], requires_grad=True)
+        m = nn.Tensor([[2,4], [8,16]], requires_grad=True)
+        r=m/v
+        r.grad=np.array([[2,1],[4,8]])
+        r.backward()
+
+        self.assertEqual([-36, -33], v.grad.tolist())
+        self.assertEqual([[2, .5], [4, 4]], m.grad.tolist())
 
     def test_grad_div_mm(self):
         m1 = nn.Tensor([[1,2], [2,1]], requires_grad=True)
