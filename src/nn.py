@@ -165,7 +165,6 @@ class Tensor:
 
         out = Tensor(self.data@x_data, requires_grad=self.requires_grad, backward=back)
         return out
-
     
     def __rmul__(self, x):
         return self*x
@@ -182,7 +181,19 @@ class Tensor:
         return out
     
     def sum(self, **kwargs):
-        return Tensor(self.data.sum(**kwargs))
+        out_d = self.data.sum(**kwargs)
+        def back():
+            if 'axis' in kwargs:
+                axis = kwargs['axis']
+                if axis == 0:
+                    self.grad += np.tile(out.grad, len(self.data)).reshape(self.shape)
+                elif axis == 1:
+                    self.grad += np.ones(self.shape) * out.grad.reshape(-1,1)
+            else:
+                self.grad += np.full(self.shape, out.grad)
+
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        return out
 
     def reshape(self, *args):
         return Tensor(self.data.reshape(*args))

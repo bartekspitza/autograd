@@ -480,7 +480,27 @@ class Testing(unittest.TestCase):
     def assertEqualUpTo4Decimals(self, expected, actual):
         actual = np.round(actual * np.array(10000)) / 10000
         self.assertEqual(expected, actual.tolist())
+    
+    # sum
+    def test_grad_sum_v(self):
+        v = nn.Tensor([0.6, 0.6], requires_grad=True)
+        r = v.sum(); r.grad=np.array(2); r.backward()
+        self.assertEqual([2,2], v.grad.tolist())
 
+    def test_grad_sum_m(self):
+        m = nn.Tensor([[1,1], [1,1]], requires_grad=True)
+        r = m.sum(); r.grad=np.array(2); r.backward()
+        self.assertEqual([[2,2],[2,2]], m.grad.tolist())
+
+    def test_grad_sum_m_axis0(self):
+        m = nn.Tensor([[1,1], [1,1]], requires_grad=True)
+        r = m.sum(axis=0); r.grad=np.array([3,4]); r.backward()
+        self.assertEqual([[3,4],[3,4]], m.grad.tolist())
+
+    def test_grad_sum_m_axis1(self):
+        m = nn.Tensor([[1,1], [1,1]], requires_grad=True)
+        r = m.sum(axis=1); r.grad=np.array([3,4]); r.backward()
+        self.assertEqual([[3,3],[4,4]], m.grad.tolist())
     
     ## Backprop chaining
     """
