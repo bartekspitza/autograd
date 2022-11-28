@@ -469,6 +469,14 @@ class Testing(unittest.TestCase):
         r.backward()
         self.assertEqualUpTo4Decimals([[2.7183,14.7781],[60.2566,218.3926]], m.grad)
 
+    # log
+    def test_grad_log_m(self):
+        m = nn.Tensor([[1,2], [3,4]], requires_grad=True)
+        r = m.log()
+        r.grad = np.array([[2,2], [2,2]])
+        r.backward()
+        self.assertEqualUpTo4Decimals([[2., 1.],[0.6667, .5]], m.grad)
+
     def assertEqualUpTo4Decimals(self, expected, actual):
         actual = np.round(actual * np.array(10000)) / 10000
         self.assertEqual(expected, actual.tolist())

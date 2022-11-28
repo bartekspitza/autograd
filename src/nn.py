@@ -194,7 +194,10 @@ class Tensor:
         return out
 
     def log(self):
-        return Tensor(np.log(self.data))
+        out_d = np.log(self.data)
+        def back(): self.grad += out.grad/self.data
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        return out
 
     def tolist(self):
         return self.data.tolist()
