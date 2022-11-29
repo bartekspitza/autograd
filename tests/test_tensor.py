@@ -32,6 +32,10 @@ class Testing(unittest.TestCase):
         v = nn.Tensor([[1,3], [5,6]])
         v.grad = 1
         self.assertEqual([[1,1],[1,1]], v.grad.tolist())
+    def test_negate_v(self):
+        v = nn.Tensor([1,3])
+        r = -v
+        self.assertEqual([-1,-3], r.tolist())
 
 
     ## Ops

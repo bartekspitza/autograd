@@ -206,6 +206,9 @@ class Tensor:
     def __rmul__(self, x):
         return self*x
     
+    def __neg__(self):
+        return self*-1
+    
     def __getitem__(self, *args):
         return Tensor(self.data.__getitem__(*args))
     
