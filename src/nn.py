@@ -30,8 +30,7 @@ class MLP:
         x = x@self.W[-1]
 
         # Softmax
-        x = x.exp()
-        return x / x.sum(axis=x.dim-1).reshape((-1, 1))
+        return softmax(x)
     
     def train(self, lr=0.01):
         for p in self.parameters:
@@ -45,3 +44,10 @@ class MLP:
     
     def __call__(self, x):
         return self.forward(x)
+
+def softmax(x):
+    x = x.exp()
+    if x.dim == 1:
+        return x / x.sum()
+    elif x.dim == 2:
+        return x / x.sum(axis=x.dim-1).reshape((-1, 1))
