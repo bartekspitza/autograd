@@ -57,9 +57,9 @@ def forward(x):
 
     return x / x.sum(axis=x.dim-1).reshape((-1, 1))
 
-epochs = 1000
-batch_size = 20
-lr = 0.01
+epochs = 100
+batch_size = 10
+lr = 0.1
 for e in range(epochs):
     x, y = draw_batch(batch_size)
 
@@ -77,7 +77,6 @@ for e in range(epochs):
     print(f'Epoch {e}: {loss.data.item()}')
 
     # Compute gradients
-    loss.grad = np.array([1])
     loss.backward()
     
     # Learn

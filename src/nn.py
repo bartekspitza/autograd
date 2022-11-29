@@ -5,7 +5,7 @@ import math
 SS,VV,MM,SV,SM,VS,MS,VM,MV = (0,0),(1,1),(2,2),(0,1),(0,2),(1,0),(2,0),(1,2),(2,1)
 
 class Tensor:
-    def __init__(self, data, requires_grad=False, backward=None, children=[]):
+    def __init__(self, data, requires_grad=False, backward=None, children=()):
         if data is None:
             raise Exception("data none")
         if isinstance(data, list):
@@ -47,7 +47,7 @@ class Tensor:
                 topo.append(v)
         build_topo(self)
 
-        # go one variable at a time and apply the chain rule to get its gradient
+        self.grad = 1
         for v in reversed(topo):
             if v._backward is not None:
                 v._backward()
@@ -81,7 +81,7 @@ class Tensor:
                 self.grad += out.grad
                 x.grad += np.sum(out.grad, axis=0)
 
-        out = Tensor(self.data+x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
+        out = Tensor(self.data+x_data, requires_grad=self.requires_grad, backward=back, children=(self, x))
         return out
     
     def __mul__(self, x):
@@ -107,7 +107,7 @@ class Tensor:
                 self.grad += x_data * out.grad
                 x.grad += (self.data * out.grad).sum(axis=0)
 
-        out = Tensor(self.data*x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
+        out = Tensor(self.data*x_data, requires_grad=self.requires_grad, backward=back, children=(self, x))
         return out
 
     def __sub__(self, x):
@@ -132,7 +132,7 @@ class Tensor:
                 self.grad += out.grad
                 x.grad -= out.grad.sum(axis=0)
 
-        out = Tensor(self.data-x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
+        out = Tensor(self.data-x_data, requires_grad=self.requires_grad, backward=back, children=(self, x))
         return out
 
     def __truediv__(self, x):
@@ -168,7 +168,7 @@ class Tensor:
                 self.grad += s_grad
                 x.grad += x_grad
 
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self, x])
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self, x))
         return out
 
     def __matmul__(self, x):
@@ -199,7 +199,7 @@ class Tensor:
                 x.grad += (self.data.reshape((k,m,1))*grads).sum(axis=0)
 
 
-        out = Tensor(self.data@x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
+        out = Tensor(self.data@x_data, requires_grad=self.requires_grad, backward=back, children=(self, x))
         return out
     
     def __rmul__(self, x):
@@ -213,7 +213,7 @@ class Tensor:
         def back():
             self.grad += (1 - np.power(out_d, 2)) * out.grad
 
-        out = Tensor(np.tanh(self.data), requires_grad=self.requires_grad, backward=back, children=[self])
+        out = Tensor(np.tanh(self.data), requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
     
     def sum(self, **kwargs):
@@ -228,7 +228,7 @@ class Tensor:
             else:
                 self.grad += np.full(self.shape, out.grad)
 
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self])
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
 
     def reshape(self, *args):
@@ -240,13 +240,13 @@ class Tensor:
     def exp(self):
         out_d = np.exp(self.data)
         def back(): self.grad += out_d * out.grad
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self])
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
 
     def log(self):
         out_d = np.log(self.data)
         def back(): self.grad += out.grad/self.data
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self])
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
 
     def tolist(self):
