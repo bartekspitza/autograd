@@ -55,6 +55,13 @@ def nlll(x, target, reduction=None):
 
     log_loss = (x.log() * target).sum(axis=x.dim-1)
     nll = -log_loss
+
+    if x.dim == 2:
+        if reduction == 'mean':
+            return nll.sum() / len(nll) 
+        if reduction == 'sum':
+            return nll.sum()
+
     return nll
 
 def softmax(x):

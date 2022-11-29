@@ -36,6 +36,9 @@ class Testing(unittest.TestCase):
         v = nn.Tensor([1,3])
         r = -v
         self.assertEqual([-1,-3], r.tolist())
+    def test_len_v(self):
+        v = nn.Tensor([1,3])
+        self.assertEqual(2, len(v))
 
 
     ## Ops

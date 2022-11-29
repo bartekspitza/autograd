@@ -11,6 +11,7 @@ class Testing(unittest.TestCase):
         self.assertEqual(expected, actual.tolist())
     # Utility
 
+    # Init
     def test_init_hidden_1(self):
         mlp = nn.MLP(inputs=10, hidden=(20,), outs=5)
         weights = [x.shape for x in mlp.W]
@@ -25,6 +26,7 @@ class Testing(unittest.TestCase):
         self.assertEqual([(50,40), (40,30), (30,5)], weights)
         self.assertEqual([(40,), (30,)], bias)
     
+    # Softmax
     def test_softmax_v(self):
         v = Tensor([-1,0,1])
         r = nn.softmax(v)
@@ -35,6 +37,7 @@ class Testing(unittest.TestCase):
         r = nn.softmax(v)
         self.assertEqualUpTo4Decimals([[.5,.5], [.7311, .2689]], r.data)
     
+    # Negative log likelihood loss
     def test_neg_log_loss_no_reduction_v(self):
         target = Tensor([0,1,0])
         logits = Tensor([-5, -5, 1])
@@ -50,3 +53,19 @@ class Testing(unittest.TestCase):
 
         nll = nn.nlll(probs, target)
         self.assertEqualUpTo4Decimals([6.0049, .0049], nll.data)
+
+    def test_neg_log_loss_mean_reduction_m(self):
+        target = Tensor([[0,1,0], [0,0,1]])
+        logits = Tensor([[-5, -5, 1], [-5,-5,1]])
+        probs = nn.softmax(logits)
+
+        nll = nn.nlll(probs, target, reduction='mean')
+        self.assertEqualUpTo4Decimals([3.0049], nll.data)
+
+    def test_neg_log_loss_sum_reduction_m(self):
+        target = Tensor([[0,1,0], [0,0,1]])
+        logits = Tensor([[-5, -5, 1], [-5,-5,1]])
+        probs = nn.softmax(logits)
+
+        nll = nn.nlll(probs, target, reduction='sum')
+        self.assertEqualUpTo4Decimals([6.0099], nll.data)
