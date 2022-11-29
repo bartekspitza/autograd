@@ -386,6 +386,16 @@ class Testing(unittest.TestCase):
 
         self.assertEqual([[.5, .5], [.375, .4]], m1.grad.tolist())
         self.assertEqual([[-.25, -.25], [-.09375, -.04]], m2.grad.tolist())
+    
+    def test_grad_div_mm(self):
+        m1 = nn.Tensor([[4, 4], [8,8]], requires_grad=True)
+        m2 = nn.Tensor([[4], [8]], requires_grad=True)
+        r=m1/m2
+        r.grad=np.array([[1,2], [3,4]])
+        r.backward()
+
+        self.assertEqual([[.25, .5], [0.375, .5]], m1.grad.tolist())
+        self.assertEqual([[-.75], [-.875]], m2.grad.tolist())
 
     # Matmul
     def test_grad_matmul_vv(self):

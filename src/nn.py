@@ -5,7 +5,7 @@ import math
 SS,VV,MM,SV,SM,VS,MS,VM,MV = (0,0),(1,1),(2,2),(0,1),(0,2),(1,0),(2,0),(1,2),(2,1)
 
 class Tensor:
-    def __init__(self, data, requires_grad=False, backward=None):
+    def __init__(self, data, requires_grad=False, backward=None, children=[]):
         if data is None:
             raise Exception("data none")
         if isinstance(data, list):
@@ -15,9 +15,10 @@ class Tensor:
         
         self.data = data
         self.requires_grad = requires_grad
-        self.backward = backward
+        self._backward = backward
+        self._prev = children
 
-        if not requires_grad: return
+        #if not requires_grad: return
         self._grad = np.zeros(self.data.shape)
     
 
@@ -34,6 +35,23 @@ class Tensor:
     dim = property(lambda x: x.data.ndim)
     shape = property(lambda x: x.data.shape)
 
+    def backward(self):
+        # topological order all of the children in the graph
+        topo = []
+        visited = set()
+        def build_topo(v):
+            if v not in visited:
+                visited.add(v)
+                for child in v._prev:
+                    build_topo(child)
+                topo.append(v)
+        build_topo(self)
+
+        # go one variable at a time and apply the chain rule to get its gradient
+        for v in reversed(topo):
+            if v._backward is not None:
+                v._backward()
+
     ## Convienence method to get a tuple of two tensors' dims
     def _dims(self, x):
         if not isinstance(x, np.ndarray):
@@ -41,6 +59,7 @@ class Tensor:
         return ((self.dim if self.shape != (1,) else 0), (x.ndim if x.shape != (1,) else 0))
 
     def __add__(self, x):
+        x = Tensor(x) if not isinstance(x, Tensor) else x
         x_data = x.data if isinstance(x, Tensor) else x
 
         def back():
@@ -62,10 +81,11 @@ class Tensor:
                 self.grad += out.grad
                 x.grad += np.sum(out.grad, axis=0)
 
-        out = Tensor(self.data+x_data, requires_grad=self.requires_grad, backward=back)
+        out = Tensor(self.data+x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
         return out
     
     def __mul__(self, x):
+        x = Tensor(x) if not isinstance(x, Tensor) else x
         x_data = x.data if isinstance(x, Tensor) else x
 
         def back(): 
@@ -87,10 +107,11 @@ class Tensor:
                 self.grad += x_data * out.grad
                 x.grad += (self.data * out.grad).sum(axis=0)
 
-        out = Tensor(self.data*x_data, requires_grad=self.requires_grad, backward=back)
+        out = Tensor(self.data*x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
         return out
 
     def __sub__(self, x):
+        x = Tensor(x) if not isinstance(x, Tensor) else x
         x_data = x.data if isinstance(x, Tensor) else x
 
         def back():
@@ -111,10 +132,11 @@ class Tensor:
                 self.grad += out.grad
                 x.grad -= out.grad.sum(axis=0)
 
-        out = Tensor(self.data-x_data, requires_grad=self.requires_grad, backward=back)
+        out = Tensor(self.data-x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
         return out
 
     def __truediv__(self, x):
+        x = Tensor(x) if not isinstance(x, Tensor) else x
         x_data = x.data if isinstance(x, Tensor) else x
 
         out_d = self.data/x_data
@@ -130,14 +152,27 @@ class Tensor:
             if dims in [VS, MS]: x_grad = x_grad.sum()
             if dims == VM: s_grad = s_grad.sum(axis=0)
             if dims == MV: x_grad = x_grad.sum(axis=0)
-            
-            self.grad += s_grad
-            x.grad += x_grad
 
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+            if dims == MM:
+                if self.shape != x.shape:
+                    if self.shape[1] == 1:
+                        self.grad += s_grad.sum(axis=1).reshape(-1, 1)
+                        x.grad += x_grad
+                    elif x.shape[1] == 1:
+                        self.grad += s_grad
+                        x.grad += x_grad.sum(axis=1).reshape(-1, 1)
+                else:
+                    self.grad += s_grad
+                    x.grad += x_grad
+            else:
+                self.grad += s_grad
+                x.grad += x_grad
+
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self, x])
         return out
 
     def __matmul__(self, x):
+        x = Tensor(x) if not isinstance(x, Tensor) else x
         x_data = x.data if isinstance(x, Tensor) else x
 
         def back():
@@ -163,7 +198,8 @@ class Tensor:
                 self.grad += (x_data*grads).sum(axis=2)
                 x.grad += (self.data.reshape((k,m,1))*grads).sum(axis=0)
 
-        out = Tensor(self.data@x_data, requires_grad=self.requires_grad, backward=back)
+
+        out = Tensor(self.data@x_data, requires_grad=self.requires_grad, backward=back, children=[self, x])
         return out
     
     def __rmul__(self, x):
@@ -177,7 +213,7 @@ class Tensor:
         def back():
             self.grad += (1 - np.power(out_d, 2)) * out.grad
 
-        out = Tensor(np.tanh(self.data), requires_grad=self.requires_grad, backward=back)
+        out = Tensor(np.tanh(self.data), requires_grad=self.requires_grad, backward=back, children=[self])
         return out
     
     def sum(self, **kwargs):
@@ -192,22 +228,25 @@ class Tensor:
             else:
                 self.grad += np.full(self.shape, out.grad)
 
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self])
         return out
 
     def reshape(self, *args):
-        return Tensor(self.data.reshape(*args))
+        def back():
+            self.grad = out.grad.reshape(*args)
+        out = Tensor(self.data.reshape(*args), backward=back, children=[self])
+        return out
 
     def exp(self):
         out_d = np.exp(self.data)
         def back(): self.grad += out_d * out.grad
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self])
         return out
 
     def log(self):
         out_d = np.log(self.data)
         def back(): self.grad += out.grad/self.data
-        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back)
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=[self])
         return out
 
     def tolist(self):
