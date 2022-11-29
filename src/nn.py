@@ -53,14 +53,13 @@ def nlll(x, target, reduction=None):
     """
     assert x.shape == target.shape
 
-    log_loss = (x.log() * target).sum(axis=x.dim-1)
-    nll = -log_loss
+    nll = -(x.log() * target).sum(axis=x.dim-1)
 
     if x.dim == 2:
-        if reduction == 'mean':
-            return nll.sum() / len(nll) 
         if reduction == 'sum':
             return nll.sum()
+        if reduction == 'mean':
+            return nll.sum() / len(nll) 
 
     return nll
 
