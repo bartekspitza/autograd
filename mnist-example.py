@@ -1,4 +1,5 @@
 from src.tensor import Tensor
+from src.nn import MLP
 import numpy as np
 from mnist import MNIST
 
@@ -28,67 +29,36 @@ def onehot(vector):
 y_train = onehot(y_train)
 y_test = onehot(y_test)
 
-W = Tensor(rng.normal(size=(784, 200)))
-W2 = Tensor(rng.normal(size=(200, 100)))
-W3 = Tensor(rng.normal(size=(100, 50)))
-b = Tensor(rng.normal(size=(200,)))
-b2 = Tensor(rng.normal(size=(100,)))
-b3 = Tensor(rng.normal(size=(50,)))
-O = Tensor(rng.normal(size=(50, 10)))
-parameters = [W,W2,W3,b,b2,b3,O]
-
 # Multinomial sampling with replacement
 def draw_batch(batch_size): 
     draw = lambda: int(rng.random() * x_train.shape[0])
     batch = [draw() for _ in range(batch_size)]
     return x_train[batch], y_train[batch]
 
-def forward(x):
-    # L1
-    x = b + (x@W) # l1
-    x = x.tanh()
-    x = b2 + (x@W2)
-    x = x.tanh()
-    x = b3 + (x@W3)
-    x = x.tanh()
-    # Output with softmax
-    x = x@O
-    x = x.exp()
-
-    return x / x.sum(axis=x.dim-1).reshape((-1, 1))
-
-epochs = 100
-batch_size = 10
-lr = 0.1
-for e in range(epochs):
-    x, y = draw_batch(batch_size)
-
-    # Forward
-    out = forward(x)
-
-    # Predictions
-    y_pred = out*y
-    
-    # Loss
+# Loss function
+def mle(x, y):
+    y_pred = x*y
     maximum_likelihood = (y*y_pred).sum(axis=1)
     neg_log_loss = -1 * maximum_likelihood.log()
-    nll = neg_log_loss.sum() 
-    loss = nll / batch_size
-    print(f'Epoch {e}: {loss.data.item()}')
+    return neg_log_loss.sum() 
 
-    # Compute gradients
-    #loss.grad = 1
+nn = MLP(inputs=784, hidden=[200, 100, 50, 40, 30], outs=10)
+epochs = 100
+batch_size = 500
+lr = 0.1
+
+for e in range(epochs):
+    x, y = draw_batch(batch_size)
+    out = nn(x)
+    loss = mle(out, y) / batch_size
     loss.backward()
-    
-    # Learn
-    for p in parameters:
-        p.data -= lr * p.grad
-        p.grad = np.zeros(p.shape)
+    nn.train(lr=lr)
+    print(f'Epoch {e}: {loss.data.item()}')
 
 correct = 0
 for i in range(len(x_test.data)):
     y = y_test[i]
-    x = forward(x_test[i])
+    x = nn(x_test[i])
     corr = np.argmax(y.data)
     predicted = np.argmax(x.data)
     if predicted == corr: correct += 1
