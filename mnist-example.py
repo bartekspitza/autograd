@@ -1,4 +1,4 @@
-from src import nn
+from src.tensor import Tensor
 import numpy as np
 from mnist import MNIST
 
@@ -7,10 +7,10 @@ mndata.gz = True
 mnist_x_train, mnist_y_train = mndata.load_training()
 mnist_x_test, mnist_y_test = mndata.load_testing()
 
-x_train = nn.Tensor(list(mnist_x_train))
-x_test = nn.Tensor(list(mnist_x_test))
-y_train = nn.Tensor(list(mnist_y_train))
-y_test = nn.Tensor(list(mnist_y_test))
+x_train = Tensor(list(mnist_x_train))
+x_test = Tensor(list(mnist_x_test))
+y_train = Tensor(list(mnist_y_train))
+y_test = Tensor(list(mnist_y_test))
 
 rng = np.random.default_rng(seed=1)
 
@@ -24,17 +24,17 @@ def onehot(vector):
     for scalar in vector.data:
         tmp2 = [1 if i==scalar else 0 for i in range(10)]
         tmp.append(tmp2)
-    return nn.Tensor(tmp)
+    return Tensor(tmp)
 y_train = onehot(y_train)
 y_test = onehot(y_test)
 
-W = nn.Tensor(rng.normal(size=(784, 200)))
-W2 = nn.Tensor(rng.normal(size=(200, 100)))
-W3 = nn.Tensor(rng.normal(size=(100, 50)))
-b = nn.Tensor(rng.normal(size=(200,)))
-b2 = nn.Tensor(rng.normal(size=(100,)))
-b3 = nn.Tensor(rng.normal(size=(50,)))
-O = nn.Tensor(rng.normal(size=(50, 10)))
+W = Tensor(rng.normal(size=(784, 200)))
+W2 = Tensor(rng.normal(size=(200, 100)))
+W3 = Tensor(rng.normal(size=(100, 50)))
+b = Tensor(rng.normal(size=(200,)))
+b2 = Tensor(rng.normal(size=(100,)))
+b3 = Tensor(rng.normal(size=(50,)))
+O = Tensor(rng.normal(size=(50, 10)))
 parameters = [W,W2,W3,b,b2,b3,O]
 
 # Multinomial sampling with replacement
@@ -77,6 +77,7 @@ for e in range(epochs):
     print(f'Epoch {e}: {loss.data.item()}')
 
     # Compute gradients
+    #loss.grad = 1
     loss.backward()
     
     # Learn

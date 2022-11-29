@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from src import nn
+from src import tensor as nn
 
 class Testing(unittest.TestCase):
 
@@ -314,7 +314,7 @@ class Testing(unittest.TestCase):
     def test_grad_div_sv(self):
         s = nn.Tensor(4, requires_grad=True)
         v = nn.Tensor([4,4], requires_grad=True)
-        r=s/v;r.grad=[1,2];r.backward()
+        r=s/v;r.grad=np.array([1,2]);r.backward()
 
         self.assertEqual(0.75, s.grad.item())
         self.assertEqual([-.25, -.5], v.grad.tolist())
@@ -322,7 +322,7 @@ class Testing(unittest.TestCase):
     def test_grad_div_vs(self):
         s = nn.Tensor(4, requires_grad=True)
         v = nn.Tensor([4,4], requires_grad=True)
-        r=v/s;r.grad=[1,2];r.backward()
+        r=v/s;r.grad=np.array([1,2]);r.backward()
 
         self.assertEqual(-0.75, s.grad.item())
         self.assertEqual([.25, 0.5], v.grad.tolist())

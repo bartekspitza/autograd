@@ -1,5 +1,4 @@
 import numpy as np
-import math
 
 # Readability,S=Scalar, V=Vector, M=Matrix, e.g. SS means scalar to scalar
 SS,VV,MM,SV,SM,VS,MS,VM,MV = (0,0),(1,1),(2,2),(0,1),(0,2),(1,0),(2,0),(1,2),(2,1)
@@ -47,7 +46,9 @@ class Tensor:
                 topo.append(v)
         build_topo(self)
 
-        self.grad = 1
+        if self.grad is None or self.grad.sum() == 0: 
+            self.grad = 1
+
         for v in reversed(topo):
             if v._backward is not None:
                 v._backward()
