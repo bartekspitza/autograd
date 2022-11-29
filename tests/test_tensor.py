@@ -4,6 +4,18 @@ from src import tensor as nn
 
 class Testing(unittest.TestCase):
 
+    # Utility
+    def round(self, x, decimals):
+        n = np.power(10, decimals)
+        r = np.round(x * n) / n
+        return r
+
+    def assertEqualUpTo4Decimals(self, expected, actual):
+        actual = np.round(actual * np.array(10000)) / 10000
+        self.assertEqual(expected, actual.tolist())
+    # Utility
+
+
     def test_init(self):
         nn.Tensor(3)
         nn.Tensor([3,3])
@@ -39,6 +51,16 @@ class Testing(unittest.TestCase):
     def test_len_v(self):
         v = nn.Tensor([1,3])
         self.assertEqual(2, len(v))
+    
+    def test_std(self):
+        v = nn.Tensor([1,2,3])
+        r = self.round(v.std(), 4) 
+        self.assertEqual(.8165, r)
+
+    def test_mean(self):
+        v = nn.Tensor([1,2,3])
+        r = v.mean()
+        self.assertEqual(2, r)
 
 
     ## Ops
@@ -494,9 +516,6 @@ class Testing(unittest.TestCase):
         r.backward()
         self.assertEqualUpTo4Decimals([[2., 1.],[0.6667, .5]], m.grad)
 
-    def assertEqualUpTo4Decimals(self, expected, actual):
-        actual = np.round(actual * np.array(10000)) / 10000
-        self.assertEqual(expected, actual.tolist())
     
     # sum
     def test_grad_sum_v(self):

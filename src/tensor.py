@@ -255,6 +255,12 @@ class Tensor:
         def back(): self.grad += out.grad/self.data
         out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
+    
+    def std(self, **kwargs):
+        return self.data.std(**kwargs)
+
+    def mean(self, **kwargs):
+        return self.data.mean(**kwargs)
 
     def tolist(self):
         return self.data.tolist()
