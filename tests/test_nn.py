@@ -34,3 +34,19 @@ class Testing(unittest.TestCase):
         v = Tensor([[0, 0], [1,0]])
         r = nn.softmax(v)
         self.assertEqualUpTo4Decimals([[.5,.5], [.7311, .2689]], r.data)
+    
+    def test_neg_log_loss_no_reduction_v(self):
+        target = Tensor([0,1,0])
+        logits = Tensor([-5, -5, 1])
+        probs = nn.softmax(logits)
+
+        nll = nn.nlll(probs, target)
+        self.assertEqualUpTo4Decimals([6.0049], nll.data)
+
+    def test_neg_log_loss_no_reduction_m(self):
+        target = Tensor([[0,1,0], [0,0,1]])
+        logits = Tensor([[-5, -5, 1], [-5,-5,1]])
+        probs = nn.softmax(logits)
+
+        nll = nn.nlll(probs, target)
+        self.assertEqualUpTo4Decimals([6.0049, .0049], nll.data)

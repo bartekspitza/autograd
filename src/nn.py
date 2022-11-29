@@ -45,6 +45,18 @@ class MLP:
     def __call__(self, x):
         return self.forward(x)
 
+def nlll(x, target, reduction=None):
+    """
+    The negative likelihood log loss.
+    x - the probability distribution (softmax)
+    y - the target probability distribution
+    """
+    assert x.shape == target.shape
+
+    log_loss = (x.log() * target).sum(axis=x.dim-1)
+    nll = -log_loss
+    return nll
+
 def softmax(x):
     x = x.exp()
     if x.dim == 1:
