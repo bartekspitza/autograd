@@ -20,14 +20,18 @@ class MLP:
         self.W.append(out)
         self.parameters = self.W + self.b
     
-    def forward(self, x):
+    def forward(self, x, debug=False):
         # Layers
         for w,b in zip(self.W, self.b):
             x = b + (x@w)
+            if debug:
+                print(f'std={x.std()}')
             x = x.tanh()
         
         # Output layer
         x = x@self.W[-1]
+        if debug:
+            print(f'std={x.std()}')
 
         # Softmax
         return softmax(x)
@@ -42,8 +46,8 @@ class MLP:
         for p in self.parameters: 
             p.grad = 0 
     
-    def __call__(self, x):
-        return self.forward(x)
+    def __call__(self, x, **kwargs):
+        return self.forward(x, **kwargs)
 
 def nlll(x, target, reduction=None):
     """
