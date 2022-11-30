@@ -1,27 +1,46 @@
 from .tensor import Tensor
 import numpy as np
 
+rng = np.random.default_rng(seed=5)
+
+class Linear:
+    def __init__(self, ins, outs, bias=True):
+        self.W = Tensor(rng.normal(size=(ins, outs)))
+        self.b = None
+        if bias:
+            self.b = Tensor(rng.normal(size=(outs,)))
+    
+    def parameters(self):
+        return [self.W] if self.b is None else [self.W, self.b]
+    
+    def __call__(self, x):
+        if self.b:
+            return x@self.W + self.b
+        else:
+            return x@self.W
+
+class BatchNorm:
+
+    def __init__(self):pass
+
+    def __call__(self, x):pass
+
+
+class Tanh:
+    def __call__(self, x):
+        return x.tanh()
+
+class Softmax:
+    def __call__(self, x):
+        return softmax(x)
+
 
 class MLP:
-    def __init__(self, inputs=1, hidden=(1,), outs=1):
-        self.W = []
-        self.b = []
-        self.rng = np.random.default_rng(seed=5)
 
-        for i, layer in enumerate(hidden):
-            prev = inputs if i == 0 else hidden[i-1]
+    def __init__(self, layers):
+        self.layers = layers
 
-            W = Tensor(self.rng.normal(size=(prev, layer)))
-            self.W.append(W)
-            b = Tensor(self.rng.normal(size=(layer,)))
-            self.b.append(b)
-
-        out = Tensor(self.rng.normal(size=(hidden[-1], outs)))
-        self.W.append(out)
-        self.parameters = self.W + self.b
-    
-
-    def forward(self, x, printstddev=False, breakpoint=(-1,-1)):
+    def forward(self, x, printstddev=False, breakpoint=-1):
         """
         Forwards the input through the network.
         printstddev - will print the std.dev before act-function of each layer
@@ -30,36 +49,26 @@ class MLP:
         """
 
         # Layers
-        i = 0
-        for w,b in zip(self.W, self.b):
-            x = b + (x@w)
-            if printstddev:
-                print(f'std={x.std()}')
-            
-            if i == breakpoint[0] and breakpoint[1] == 0:
-                return x
-            x = x.tanh()
-            if i == breakpoint[0] and breakpoint[1] == 1:
-                return x
-
-            i+=1
+        for i, layer in enumerate(self.layers):
+            x = layer(x)
+            if i == breakpoint: return x
+            if printstddev and isinstance(layer, Linear): print(f'std={x.std()}')
         
-        # Output layer
-        x = x@self.W[-1]
-        if printstddev:
-            print(f'std={x.std()}')
+        return x
 
-        # Softmax
-        return softmax(x)
+    def parameters(self):
+        params = []
+        for l in self.layers:
+            if isinstance(l, Linear):
+                params += l.parameters()
+        return params
     
-    def train(self, lr=0.01):
-        for p in self.parameters:
+    def optimize(self, lr=0.01):
+        for p in self.parameters():
             p.data -= lr * p.grad
-        
-        self.zero_grad()
     
     def zero_grad(self):
-        for p in self.parameters: 
+        for p in self.parameters():
             p.grad = 0 
     
     def __call__(self, x, **kwargs):
