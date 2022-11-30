@@ -20,17 +20,33 @@ class MLP:
         self.W.append(out)
         self.parameters = self.W + self.b
     
-    def forward(self, x, debug=False):
+
+    def forward(self, x, printstddev=False, breakpoint=(-1,-1)):
+        """
+        Forwards the input through the network.
+        printstddev - will print the std.dev before act-function of each layer
+        breakpoint - a tuple: breakpoint[0] = index of layer, breakpoint[1] = 0 for pre act, 1 for after act. 
+        Then returns that layers output
+        """
+
         # Layers
+        i = 0
         for w,b in zip(self.W, self.b):
             x = b + (x@w)
-            if debug:
+            if printstddev:
                 print(f'std={x.std()}')
+            
+            if i == breakpoint[0] and breakpoint[1] == 0:
+                return x
             x = x.tanh()
+            if i == breakpoint[0] and breakpoint[1] == 1:
+                return x
+
+            i+=1
         
         # Output layer
         x = x@self.W[-1]
-        if debug:
+        if printstddev:
             print(f'std={x.std()}')
 
         # Softmax
