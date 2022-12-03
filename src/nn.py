@@ -31,7 +31,6 @@ class Softmax:
 
 
 class MLP:
-
     def __init__(self, layers):
         self.layers = layers
 
@@ -68,6 +67,9 @@ class MLP:
     
     def __call__(self, x, **kwargs):
         return self.forward(x, **kwargs)
+
+    def __getitem__(self, x):
+        return self.layers[x]
 
 def nlll(x, target, reduction=None):
     """
