@@ -8,7 +8,7 @@ class Linear:
         self.W = Tensor(rng.normal(size=(ins, outs)))
         self.b = None
         if bias:
-            self.b = Tensor(rng.normal(size=(outs,)))
+            self.b = Tensor(np.zeros((outs,)))
     
     def parameters(self):
         return [self.W] if self.b is None else [self.W, self.b]
