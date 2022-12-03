@@ -6,18 +6,13 @@ rng = np.random.default_rng(seed=5)
 class Linear:
     def __init__(self, ins, outs, bias=True):
         self.W = Tensor(rng.normal(size=(ins, outs)))
-        self.b = None
-        if bias:
-            self.b = Tensor(np.zeros((outs,)))
+        self.bias = Tensor(np.zeros((outs,))) if bias else None
     
     def parameters(self):
-        return [self.W] if self.b is None else [self.W, self.b]
+        return [self.W, self.bias] if self.bias else [self.W]
     
     def __call__(self, x):
-        if self.b:
-            return x@self.W + self.b
-        else:
-            return x@self.W
+        return (x@self.W + self.bias) if self.bias else (x@self.W)
 
 class BatchNorm:
 
