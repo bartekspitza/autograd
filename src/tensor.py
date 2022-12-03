@@ -9,7 +9,9 @@ class Tensor:
             raise Exception("data none")
         if isinstance(data, list):
             data = np.array(data, dtype=float)
-        if isinstance(data, (int, float)):
+        elif isinstance(data, np.ndarray):
+            data = data.astype(float)
+        elif isinstance(data, (int, float)):
             data = np.array([data], dtype=float)
         
         self.data = data
