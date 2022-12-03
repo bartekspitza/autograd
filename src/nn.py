@@ -30,7 +30,7 @@ class Softmax:
         return softmax(x)
 
 
-class MLP:
+class Sequential:
     def __init__(self, layers):
         self.layers = layers
 
