@@ -16,10 +16,16 @@ class Linear:
 
 class BatchNorm:
 
-    def __init__(self):pass
+    def __init__(self, outs):
+        self.beta = Tensor(np.zeros((outs,)))
+        self.gamma = Tensor(np.ones((outs,)))
 
-    def __call__(self, x):pass
+    def __call__(self, x):
+        x = self.gamma * ((x - x.mean(0)) / x.std(0)) + self.beta
+        return x
 
+    def parameters(self):
+        return [self.beta, self.gamma]
 
 class Tanh:
     def __call__(self, x):
@@ -45,15 +51,15 @@ class Sequential:
         # Layers
         for i, layer in enumerate(self.layers):
             x = layer(x)
+            if printstddev and isinstance(layer, (Linear, BatchNorm)): print(f'std={x.std()}')
             if i == breakpoint: return x
-            if printstddev and isinstance(layer, Linear): print(f'std={x.std()}')
         
         return x
 
     def parameters(self):
         params = []
         for l in self.layers:
-            if isinstance(l, Linear):
+            if isinstance(l, (Linear, BatchNorm)):
                 params += l.parameters()
         return params
     

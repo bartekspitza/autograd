@@ -258,11 +258,11 @@ class Tensor:
         out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
     
-    def std(self, **kwargs):
-        return self.data.std(**kwargs)
+    def std(self, *args, **kwargs):
+        return self.data.std(*args, **kwargs)
 
-    def mean(self, **kwargs):
-        return self.data.mean(**kwargs)
+    def mean(self, *args, **kwargs):
+        return self.data.mean(*args, **kwargs)
 
     def tolist(self):
         return self.data.tolist()
