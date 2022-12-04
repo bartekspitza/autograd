@@ -222,7 +222,17 @@ class Tensor:
         def back():
             self.grad += (1 - np.power(out_d, 2)) * out.grad
 
-        out = Tensor(np.tanh(self.data), requires_grad=self.requires_grad, backward=back, children=(self,))
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
+        return out
+
+    def relu(self):
+        tmp = self.data >= 0
+        out_d = tmp*self.data
+
+        def back():
+            self.grad += tmp * out.grad
+
+        out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
     
     def sum(self, **kwargs):

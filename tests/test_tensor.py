@@ -79,6 +79,10 @@ class Testing(unittest.TestCase):
     def test_matmul(self):
         a = nn.Tensor([3,3])
         self.assertEqual([18], (a@a).tolist())
+    def test_relu(self):
+        a = nn.Tensor([-1,0,3])
+        self.assertEqual([0,0,3], a.relu().tolist())
+        nn.Tensor(2).relu();nn.Tensor([[1,1]]).relu()
     
     ## Backprop
     # Add
@@ -500,6 +504,23 @@ class Testing(unittest.TestCase):
         r.backward()
         self.assertEqualUpTo4Decimals([[.7116, 1.4232], [2.1347, 2.8463]], m.grad)
     
+    # Relu
+    def test_grad_tanh_s(self):
+        s = nn.Tensor(0.6, requires_grad=True)
+        r = s.relu(); r.grad = 2; r.backward()
+        self.assertEqualUpTo4Decimals([2], s.grad)
+
+    def test_grad_relu_v(self):
+        v = nn.Tensor([-1, 2], requires_grad=True)
+        r = v.relu(); r.grad = np.array([1, 2]); r.backward()
+        self.assertEqualUpTo4Decimals([0, 2], v.grad)
+    def test_grad_tanh_m(self):
+        m = nn.Tensor([[-1, 1], [0, -1]], requires_grad=True)
+        r = m.relu()
+        r.grad = np.array([[1,2], [3,4]])
+        r.backward()
+        self.assertEqualUpTo4Decimals([[0,2], [3,0]], m.grad)
+
     # exp
     def test_grad_exp_m(self):
         m = nn.Tensor([[1,2], [3,4]], requires_grad=True)

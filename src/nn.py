@@ -49,7 +49,11 @@ class Tanh:
 
 class Softmax:
     def __call__(self, x):
-        return softmax(x)
+        x = x.exp()
+        if x.dim == 1:
+            return x / x.sum()
+        elif x.dim == 2:
+            return x / x.sum(axis=x.dim-1).reshape((-1, 1))
 
 
 class Sequential:
@@ -114,10 +118,3 @@ def nlll(x, target, reduction=None):
             return nll.sum() / len(nll) 
 
     return nll
-
-def softmax(x):
-    x = x.exp()
-    if x.dim == 1:
-        return x / x.sum()
-    elif x.dim == 2:
-        return x / x.sum(axis=x.dim-1).reshape((-1, 1))
