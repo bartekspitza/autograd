@@ -1,5 +1,6 @@
 from .tensor import Tensor
 import numpy as np
+from operator import attrgetter
 
 rng = np.random.default_rng(seed=5)
 
@@ -15,13 +16,28 @@ class Linear:
         return (x@self.W + self.bias) if self.bias else (x@self.W)
 
 class BatchNorm:
-
-    def __init__(self, outs):
+    def __init__(self, outs, eps=1e-5, momentum=0.1):
         self.beta = Tensor(np.zeros((outs,)))
         self.gamma = Tensor(np.ones((outs,)))
+        self.eps = eps
+        self.momentum = momentum
+
+        self.training = True
+        self._count = 0
+        self.mean_running = np.zeros((outs,))
+        self.var_running = np.zeros((outs,))
 
     def __call__(self, x):
-        x = self.gamma * ((x - x.mean(0)) / x.std(0)) + self.beta
+        if self.training:
+            x_var = x.var(0)
+            x_mean = x.mean(0)
+            self.mean_running = (1-self.momentum) * self.mean_running + (self.momentum*x_mean)
+            self.var_running = (1-self.momentum) * self.var_running + (self.momentum*x_var)
+        else:
+            x_var = self.var_running
+            x_mean = self.mean_running
+
+        x = self.gamma * ((x-x_mean)/(np.sqrt(x_var) +self.eps)) + self.beta
         return x
 
     def parameters(self):
@@ -62,6 +78,10 @@ class Sequential:
             if isinstance(l, (Linear, BatchNorm)):
                 params += l.parameters()
         return params
+    
+    def inference(self):
+        for l in (l for l in self.layers if isinstance(l, BatchNorm)):
+            l.training=False
     
     def optimize(self, lr=0.01):
         for p in self.parameters():

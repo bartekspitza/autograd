@@ -258,14 +258,11 @@ class Tensor:
         out = Tensor(out_d, requires_grad=self.requires_grad, backward=back, children=(self,))
         return out
     
-    def std(self, *args, **kwargs):
-        return self.data.std(*args, **kwargs)
-
-    def mean(self, *args, **kwargs):
-        return self.data.mean(*args, **kwargs)
-
-    def tolist(self):
-        return self.data.tolist()
+    # Numpy wrappers
+    def std(self, *args, **kwargs): return self.data.std(*args, **kwargs)
+    def mean(self, *args, **kwargs): return self.data.mean(*args, **kwargs)
+    def var(self, *args, **kwargs): return self.data.var(*args, **kwargs)
+    def tolist(self): return self.data.tolist()
     
     def __repr__(self):
         repr = self.data.__repr__()
