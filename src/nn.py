@@ -5,7 +5,7 @@ from operator import attrgetter
 rng = np.random.default_rng(seed=5)
 
 class Linear:
-    def __init__(self, ins, outs, bias=True):
+    def __init__(self, ins, outs, bias=False):
         self.W = Tensor(rng.normal(size=(ins, outs)))
         self.bias = Tensor(np.zeros((outs,))) if bias else None
     
@@ -46,6 +46,10 @@ class BatchNorm:
 class Tanh:
     def __call__(self, x):
         return x.tanh()
+
+class Relu:
+    def __call__(self, x):
+        return x.relu()
 
 class Softmax:
     def __call__(self, x):
